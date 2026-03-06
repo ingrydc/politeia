@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foucault — Poder, Disciplina, Governamentalidade</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg: #0e0e0f;
+  --surface: #141416;
+  --surface2: #1a1a1d;
+  --border: #2a2a2e;
+  --border2: #353539;
+  --text: #c8c8cc;
+  --text-dim: #6a6a72;
+  --text-bright: #e8e8ec;
+  --accent: #e05a2b;
+  --accent2: #7b61ff;
+  --accent3: #2bc4c4;
+  --sidebar: 300px;
+  --mono: 'IBM Plex Mono', monospace;
+  --serif: 'IBM Plex Serif', serif;
+  --sans: 'IBM Plex Sans', sans-serif;
+}
+
+body {
+  font-family: var(--serif);
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ── SCANLINE OVERLAY ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.03) 2px,
+    rgba(0,0,0,0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* ── SIDEBAR ── */
+#sidebar {
+  width: var(--sidebar);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  position: fixed;
+  top: 0; left: 0;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  z-index: 200;
+}
+
+#sidebar-logo {
+  padding: 28px 24px 20px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+#sidebar-logo::before {
+  content: 'ARQUIVO';
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.35em;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 10px;
+}
+#sidebar-logo h1 {
+  font-family: var(--mono);
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--text-bright);
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+}
+#sidebar-logo p {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--text-dim);
+  margin-top: 6px;
+  letter-spacing: 0.05em;
+}
+.logo-line {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, var(--accent) 0%, transparent 100%);
+  margin-top: 16px;
+}
+
+.nav-group {
+  padding: 16px 0 8px;
+  border-bottom: 1px solid var(--border);
+}
+.nav-group-label {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  font-weight: 500;
+  letter-spacing: 0.25em;
+  color: var(--accent);
+  padding: 0 24px 8px;
+  text-transform: uppercase;
+}
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 24px;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: all 0.15s;
+  line-height: 1.4;
+}
+.nav-link::before {
+  content: '›';
+  font-size: 0.8rem;
+  opacity: 0;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+.nav-link:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+.nav-link:hover::before { opacity: 1; }
+.nav-link.active {
+  color: var(--text-bright);
+  border-left-color: var(--accent);
+  background: rgba(224,90,43,0.06);
+}
+.nav-link.active::before { opacity: 1; color: var(--accent); }
+
+/* HIGHLIGHT PANEL */
+.hl-panel {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  flex: 1;
+}
+.panel-title {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  font-weight: 500;
+  letter-spacing: 0.25em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.saved-empty {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  font-style: italic;
+}
+.saved-item {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  border-radius: 3px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  color: #0e0e0f;
+  line-height: 1.5;
+  transition: opacity 0.15s, transform 0.1s;
+  border-left: 3px solid rgba(0,0,0,0.2);
+}
+.saved-item:hover { opacity: 0.85; transform: translateX(2px); }
+.saved-tag {
+  font-size: 0.55rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.55;
+  margin-bottom: 3px;
+}
+.clear-btn {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  padding: 7px 12px;
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: 2px;
+  color: var(--text-dim);
+  cursor: pointer;
+  width: 100%;
+  margin-top: 10px;
+  letter-spacing: 0.05em;
+  transition: all 0.15s;
+}
+.clear-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── MAIN ── */
+#main { margin-left: var(--sidebar); flex: 1; min-height: 100vh; }
+
+#progress {
+  position: fixed;
+  top: 0;
+  left: var(--sidebar);
+  right: 0;
+  height: 2px;
+  background: var(--border);
+  z-index: 300;
+}
+#progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  width: 0;
+  transition: width 0.1s;
+}
+
+#topbar {
+  position: sticky;
+  top: 0;
+  background: rgba(14,14,15,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 56px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 100;
+}
+#topbar-label {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
+}
+#topbar-hint {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--text-dim);
+}
+
+#content {
+  max-width: 740px;
+  margin: 0 auto;
+  padding: 56px 56px 100px;
+}
+
+/* ── CHAPTERS ── */
+.chapter { margin-bottom: 72px; }
+
+.book-header { margin-bottom: 40px; }
+.book-tag {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+.book-header h2 {
+  font-family: var(--mono);
+  font-size: 1.7rem;
+  font-weight: 500;
+  color: var(--text-bright);
+  margin-top: 10px;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+}
+.book-sub {
+  font-family: var(--serif);
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  margin-top: 8px;
+  font-style: italic;
+}
+.rule {
+  height: 1px;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--border) 40%, transparent 100%);
+  margin-top: 24px;
+}
+
+.ch-header {
+  display: flex;
+  gap: 0;
+  align-items: stretch;
+  margin-bottom: 28px;
+  border-left: 3px solid var(--accent);
+}
+.ch-num {
+  font-family: var(--mono);
+  font-size: 2.8rem;
+  font-weight: 500;
+  color: var(--accent);
+  line-height: 1;
+  padding: 12px 20px 12px 16px;
+  flex-shrink: 0;
+  opacity: 0.6;
+  border-right: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+}
+.ch-info {
+  padding: 12px 20px;
+}
+.ch-info h3 {
+  font-family: var(--mono);
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--text-bright);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+.ch-sub {
+  font-family: var(--serif);
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin-top: 5px;
+  font-style: italic;
+}
+
+.text p {
+  font-family: var(--serif);
+  font-size: 1rem;
+  line-height: 1.85;
+  color: var(--text);
+  margin-bottom: 18px;
+}
+.text p:last-child { margin-bottom: 0; }
+.text strong { color: var(--text-bright); font-weight: 600; }
+.text em { color: var(--accent3); font-style: italic; }
+
+.box {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent2);
+  border-radius: 0 4px 4px 0;
+  padding: 20px 24px;
+  margin: 28px 0;
+  position: relative;
+}
+.box::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--accent2), transparent);
+}
+.box-label {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  color: var(--accent2);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.box p, .box li {
+  font-family: var(--serif);
+  font-size: 0.92rem;
+  line-height: 1.75;
+  color: var(--text);
+}
+.box ul { padding-left: 0; list-style: none; }
+.box li { padding-left: 16px; position: relative; margin-bottom: 10px; }
+.box li::before { content: '—'; position: absolute; left: 0; color: var(--accent2); font-family: var(--mono); }
+.box li strong { color: var(--text-bright); }
+
+.box-orange { border-left-color: var(--accent); }
+.box-orange::before { background: linear-gradient(90deg, var(--accent), transparent); }
+.box-orange .box-label { color: var(--accent); }
+.box-orange .box li::before { color: var(--accent); }
+
+.box-teal { border-left-color: var(--accent3); }
+.box-teal::before { background: linear-gradient(90deg, var(--accent3), transparent); }
+.box-teal .box-label { color: var(--accent3); }
+.box-teal .box li::before { color: var(--accent3); }
+
+blockquote {
+  margin: 28px 0;
+  padding: 20px 24px 20px 20px;
+  border-left: 3px solid var(--border2);
+  background: var(--surface);
+  position: relative;
+}
+blockquote::before {
+  content: '"';
+  font-family: var(--serif);
+  font-size: 4rem;
+  color: var(--border2);
+  position: absolute;
+  top: -8px;
+  left: 16px;
+  line-height: 1;
+}
+blockquote p {
+  font-family: var(--serif);
+  font-size: 0.98rem;
+  font-style: italic;
+  line-height: 1.75;
+  color: var(--text);
+  padding-left: 24px;
+}
+blockquote cite {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--text-dim);
+  margin-top: 10px;
+  display: block;
+  font-style: normal;
+  padding-left: 24px;
+  letter-spacing: 0.05em;
+}
+
+.divider {
+  text-align: center;
+  padding: 16px 0 4px;
+  position: relative;
+}
+.divider::before {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  top: 50%;
+  height: 1px;
+  background: var(--border);
+}
+.divider span {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.3em;
+  color: var(--text-dim);
+  background: var(--bg);
+  padding: 0 16px;
+  position: relative;
+  text-transform: uppercase;
+}
+
+.compare-wrap { overflow-x: auto; margin: 28px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+th {
+  font-family: var(--mono);
+  background: var(--surface2);
+  color: var(--accent);
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 500;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  border-bottom: 1px solid var(--border2);
+}
+td {
+  font-family: var(--serif);
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  line-height: 1.5;
+  vertical-align: top;
+  font-size: 0.88rem;
+}
+tr:hover td { background: rgba(255,255,255,0.02); }
+
+/* ── PANOPTICO DIAGRAM ── */
+.panoptico {
+  margin: 28px 0;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 32px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.panoptico::before {
+  content: 'DIAGRAMA — PANÓPTICO DE BENTHAM';
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.25em;
+  color: var(--text-dim);
+  display: block;
+  margin-bottom: 24px;
+}
+.pan-svg { width: 100%; max-width: 280px; }
+
+/* ── FLOATING MENU ── */
+#hl-menu {
+  position: absolute;
+  display: none;
+  z-index: 9999;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 10px 14px;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+  user-select: none;
+  pointer-events: auto;
+}
+#hl-menu::after {
+  content: '';
+  position: absolute;
+  bottom: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 7px solid var(--surface2);
+}
+.hm-label {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+  letter-spacing: 0.08em;
+}
+.hm-cor {
+  width: 24px; height: 24px;
+  border-radius: 3px;
+  border: 1px solid rgba(255,255,255,0.1);
+  cursor: pointer;
+  transition: transform 0.12s, border-color 0.15s;
+  outline: none;
+  flex-shrink: 0;
+}
+.hm-cor:hover { transform: scale(1.15); border-color: rgba(255,255,255,0.4); }
+.hm-fechar {
+  background: none; border: none;
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 2px 5px;
+  border-radius: 2px;
+  font-family: var(--mono);
+  transition: color 0.12s;
+  margin-left: 2px;
+}
+.hm-fechar:hover { color: var(--text-bright); }
+</style>
+</head>
+<body>
+
+<!-- FLOATING HIGHLIGHT MENU -->
+<div id="hl-menu">
+  <span class="hm-label">MARCAR</span>
+  <button class="hm-cor" data-c="y" style="background:#c9a227" title="Âmbar"></button>
+  <button class="hm-cor" data-c="g" style="background:#2bc4a0" title="Verde"></button>
+  <button class="hm-cor" data-c="b" style="background:#7b61ff" title="Violeta"></button>
+  <button class="hm-cor" data-c="r" style="background:#e05a2b" title="Laranja"></button>
+  <button class="hm-fechar" id="hm-fechar">✕</button>
+</div>
+
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <div id="sidebar-logo">
+    <h1>Michel Foucault</h1>
+    <p>PODER · DISCIPLINA · GOVERNAMENTALIDADE</p>
+    <div class="logo-line"></div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Microfísica do Poder</div>
+    <span class="nav-link" data-target="mf-intro">Visão geral</span>
+    <span class="nav-link" data-target="mf-poder">O que é poder?</span>
+    <span class="nav-link" data-target="mf-saber">Saber-poder</span>
+    <span class="nav-link" data-target="mf-resistencia">Resistência</span>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Vigiar e Punir</div>
+    <span class="nav-link" data-target="vp-intro">Visão geral</span>
+    <span class="nav-link" data-target="vp-disciplina">Disciplina</span>
+    <span class="nav-link" data-target="vp-panoptico">O Panóptico</span>
+    <span class="nav-link" data-target="vp-norma">A norma</span>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Nascimento da Biopolítica</div>
+    <span class="nav-link" data-target="nb-intro">Visão geral</span>
+    <span class="nav-link" data-target="nb-biopoder">Biopoder</span>
+    <span class="nav-link" data-target="nb-govern">Governamentalidade</span>
+    <span class="nav-link" data-target="nb-neoliberal">Neoliberalismo</span>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Síntese</div>
+    <span class="nav-link" data-target="sintese">Os três eixos</span>
+  </div>
+
+  <div class="hl-panel">
+    <div class="panel-title">// Anotações</div>
+    <div id="saved-list"><span class="saved-empty">selecione texto para marcar</span></div>
+    <button class="clear-btn" id="clear-btn">[ limpar todos ]</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main id="main">
+  <div id="progress"><div id="progress-fill"></div></div>
+  <div id="topbar">
+    <span id="topbar-label">FOUCAULT — PODER, DISCIPLINA, GOVERNAMENTALIDADE</span>
+    <span id="topbar-hint">selecione texto para destacar</span>
+  </div>
+
+  <div id="content">
+
+    <!-- MICROFÍSICA INTRO -->
+    <section id="mf-intro" class="chapter">
+      <div class="book-header">
+        <span class="book-tag">Microfísica do Poder · 1979</span>
+        <h2>Microfísica<br>do Poder</h2>
+        <div class="book-sub">Entrevistas e textos reunidos — genealogia do poder moderno</div>
+        <div class="rule"></div>
+      </div>
+      <div class="text">
+        <p>Michel Foucault foi um filósofo francês que transformou radicalmente a forma como pensamos sobre poder, saber, corpo e sociedade. Diferente dos filósofos políticos tradicionais, ele não se perguntava <em>"quem tem o poder?"</em>, mas sim: <em>"como o poder funciona? Por onde ele circula? Como ele produz sujeitos?"</em></p>
+        <p><em>Microfísica do Poder</em> não é um livro no sentido clássico — é uma coletânea de entrevistas e artigos reunidos por seu editor Roberto Machado. É o melhor ponto de entrada para entender como Foucault pensa o poder de forma capilar, distribuída, invisível.</p>
+        <p>A ideia central é provocadora: o poder não é uma coisa que alguém <strong>tem</strong> ou <strong>toma</strong>. O poder é algo que <strong>circula</strong>, que se exerce em relações, que está em toda parte — nas escolas, nos hospitais, nas prisões, nas famílias, nos corpos.</p>
+      </div>
+    </section>
+
+    <!-- O QUE É PODER -->
+    <section id="mf-poder" class="chapter">
+      <div class="ch-header">
+        <div class="ch-num">01</div>
+        <div class="ch-info">
+          <h3>O que é poder para Foucault?</h3>
+          <div class="ch-sub">Uma ruptura radical com a teoria política clássica</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>A teoria política clássica — de Hobbes a Marx — pensa o poder como algo que se <strong>possui</strong>: o Estado tem o poder, a burguesia tem o poder, o soberano tem o poder. Foucault inverte esse raciocínio completamente.</p>
+      </div>
+      <div class="box box-orange">
+        <div class="box-label">// A concepção relacional de poder</div>
+        <ul>
+          <li><strong>O poder não se possui — se exerce.</strong> Ele é sempre uma relação entre forças, nunca uma propriedade de um indivíduo ou grupo.</li>
+          <li><strong>O poder é capilar.</strong> Ele não vem só "de cima" (do Estado, dos patrões). Ele circula nos gestos cotidianos, nas regras implícitas, nas instituições menores.</li>
+          <li><strong>O poder é produtivo.</strong> Não é só repressivo — ele produz saberes, identidades, corpos dóceis, verdades. A prisão não apenas pune, ela produz o "delinquente".</li>
+          <li><strong>Onde há poder, há resistência.</strong> O poder não existe sem a possibilidade de resistir a ele. A resistência não é exterior ao poder — ela é sua condição de existência.</li>
+        </ul>
+      </div>
+      <div class="text">
+        <p>Foucault propõe uma <strong>analítica do poder</strong> — não uma teoria geral, mas um conjunto de ferramentas para analisar como o poder opera em situações concretas. Ele quer saber: como o poder se exerce nesse hospital? Nessa escola? Nessa relação entre médico e paciente?</p>
+      </div>
+      <blockquote>
+        <p>O poder deve ser analisado como algo que circula, ou melhor, como algo que só funciona em cadeia. Ele nunca está localizado aqui ou ali, nunca está nas mãos de alguns.</p>
+        <cite>— Foucault, Microfísica do Poder</cite>
+      </blockquote>
+    </section>
+
+    <!-- SABER-PODER -->
+    <section id="mf-saber" class="chapter">
+      <div class="ch-header">
+        <div class="ch-num">02</div>
+        <div class="ch-info">
+          <h3>Saber-Poder</h3>
+          <div class="ch-sub">Por que o conhecimento nunca é neutro</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>Uma das contribuições mais importantes de Foucault é mostrar que <strong>saber e poder são inseparáveis</strong>. Não existe conhecimento neutro, desinteressado, puro. Todo saber é produzido dentro de relações de poder, e todo exercício de poder produz e precisa de saberes.</p>
+        <p>O hiphen em "saber-poder" é proposital: os dois termos se implicam mutuamente. A medicina cria o "doente mental". A criminologia cria o "delinquente". A pedagogia cria o "aluno problemático". Essas categorias não são descobertas neutras — são construções que têm efeitos de poder sobre as pessoas classificadas.</p>
+      </div>
+      <div class="box">
+        <div class="box-label">// Exemplos de saber-poder</div>
+        <ul>
+          <li><strong>Medicina e loucura:</strong> O saber psiquiátrico não apenas descreve a loucura — ele define quem é louco, quem decide, quem tem o direito de internar. O diagnóstico é um ato de poder.</li>
+          <li><strong>Criminologia e delinquência:</strong> O saber criminológico não apenas estuda o crime — ele produz categorias de "criminoso" que justificam práticas punitivas específicas.</li>
+          <li><strong>Sexologia e sexualidade:</strong> Ao estudar a "sexualidade normal e anormal", a ciência produziu novas categorias de identidade — o homossexual, o perverso — que passaram a ser alvos de controle.</li>
+          <li><strong>Estatística e população:</strong> A capacidade de medir, contar e classificar populações inteiras criou uma nova forma de poder sobre grupos — não mais sobre indivíduos, mas sobre "a população".</li>
+        </ul>
+      </div>
+      <div class="text">
+        <p>Isso não significa que o conhecimento é "mentira" ou que a ciência não existe. Significa que devemos perguntar: <em>quem produz esse saber? Em que contexto? Com que efeitos sobre quem?</em> A história das ciências humanas é, para Foucault, uma história de como formas de saber se articularam com formas de poder.</p>
+      </div>
+    </section>
+
+    <!-- RESISTÊNCIA -->
+    <section id="mf-resistencia" class="chapter">
+      <div class="ch-header">
+        <div class="ch-num">03</div>
+        <div class="ch-info">
+          <h3>Resistência</h3>
+          <div class="ch-sub">Onde há poder, há resistência — e vice-versa</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>Um equívoco comum ao ler Foucault é concluir que, se o poder está em toda parte, somos impotentes diante dele. Foucault rejeita essa conclusão. O poder, precisamente porque é relacional, implica sempre a possibilidade de resistir.</p>
+        <p>Mas a resistência foucaultiana é diferente da revolução marxista clássica — não é um ato único de tomada do poder. São <strong>resistências plurais, locais, difusas</strong>: greves, recusas, desvios, sabotagens, inversões de categorias, criação de contra-saberes.</p>
+      </div>
+      <div class="box box-teal">
+        <div class="box-label">// Formas de resistência</div>
+        <ul>
+          <li><strong>Resistências locais:</strong> Pacientes que recusam diagnósticos, presos que escrevem, estudantes que transgridem regras, comunidades que criam seus próprios saberes sobre saúde.</li>
+          <li><strong>Inversão de estigmas:</strong> Grupos que tomam categorias negativas que lhes foram impostas ("louco", "queer", "criminoso") e as ressignificam como identidade de luta.</li>
+          <li><strong>Contra-condutas:</strong> Recusar ser governado de determinada forma — não a anarquia total, mas a recusa de certas tecnologias de controle específicas.</li>
+        </ul>
+      </div>
+      <blockquote>
+        <p>Não existe, com respeito ao poder, um lugar de grande Recusa — alma da revolta, foco de todas as rebeliões, lei pura do revolucionário. Mas existem resistências, no plural.</p>
+        <cite>— Foucault, A Vontade de Saber</cite>
+      </blockquote>
+    </section>
+
+    <div class="divider"><span>vigiar e punir</span></div>
+
+    <!-- VIGIAR E PUNIR INTRO -->
+    <section id="vp-intro" class="chapter">
+      <div class="book-header">
+        <span class="book-tag">Vigiar e Punir · 1975</span>
+        <h2>Vigiar<br>e Punir</h2>
+        <div class="book-sub">Nascimento da prisão — genealogia do sistema punitivo moderno</div>
+        <div class="rule"></div>
+      </div>
+      <div class="text">
+        <p>Este talvez seja o livro mais famoso de Foucault. Ele começa com uma cena brutal: a descrição detalhada do esquartejamento público de um condenado na França do século XVIII. Depois, sem transição dramática, descreve a rotina minuciosa de uma prisão do século XIX — horários, exercícios, refeições, silêncios.</p>
+        <p>O contraste é o argumento: em menos de um século, a punição passou do <em>suplício do corpo</em> para a <em>disciplina da alma</em>. De espetáculo público de dor para controle silencioso de comportamentos. Foucault pergunta: essa mudança foi realmente um progresso humano, ou foi apenas uma forma <em>diferente</em> — e mais eficiente — de controle?</p>
+      </div>
+    </section>
+
+    <!-- DISCIPLINA -->
+    <section id="vp-disciplina" class="chapter">
+      <div class="ch-header">
+        <div class="ch-num">04</div>
+        <div class="ch-info">
+          <h3>A Disciplina</h3>
+          <div class="ch-sub">Como os corpos são fabricados — dóceis e úteis ao mesmo tempo</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>A disciplina é uma <strong>tecnologia de poder</strong> que surgiu nos séculos XVII e XVIII e se espalhou por toda a sociedade moderna. Ela opera sobre os corpos individuais, tornando-os simultaneamente <em>dóceis</em> (obedientes, controláveis) e <em>úteis</em> (produtivos, eficientes).</p>
+        <p>A grande virada que Foucault identifica: o poder disciplinar <strong>não apenas reprime</strong> — ele <strong>fabrica</strong>. O soldado disciplinado, o aluno aplicado, o operário produtivo — esses não são tipos humanos naturais. São construções produzidas por técnicas específicas.</p>
+      </div>
+      <div class="box box-orange">
+        <div class="box-label">// As três técnicas disciplinares</div>
+        <ul>
+          <li><strong>Vigilância hierárquica:</strong> Um olhar que vê tudo sem ser visto. Arquitetura projetada para observar (escolas, quartéis, fábricas). A simples possibilidade de ser observado muda o comportamento.</li>
+          <li><strong>Sanção normalizadora:</strong> Não só punir o que é proibido, mas medir, comparar, hierarquizar. O "bom aluno" e o "mau aluno" são criados pela norma — não apenas por leis, mas por avaliações contínuas.</li>
+          <li><strong>O exame:</strong> Combinação de vigilância e normalização — o exame observa, classifica, documenta e cria um "saber" sobre cada indivíduo que ao mesmo tempo é um instrumento de poder sobre ele.</li>
+        </ul>
+      </div>
+      <div class="text">
+        <p>O que Foucault chama atenção é que essas técnicas se <strong>espalharam por toda a sociedade</strong>: da prisão para a escola, do quartel para a fábrica, do hospital para a família. A sociedade moderna é, para ele, uma <em>sociedade disciplinar</em> — não porque existe uma prisão em cada lugar, mas porque os mesmos princípios de controle organizam as instituições em geral.</p>
+      </div>
+      <blockquote>
+        <p>A disciplina fabrica assim corpos submissos e exercitados, corpos "dóceis". A disciplina aumenta as forças do corpo (em termos econômicos de utilidade) e diminui essas mesmas forças (em termos políticos de obediência).</p>
+        <cite>— Foucault, Vigiar e Punir</cite>
+      </blockquote>
+    </section>
+
+    <!-- PANÓPTICO -->
+    <section id="vp-panoptico" class="chapter">
+      <div class="ch-header">
+        <div class="ch-num">05</div>
+        <div class="ch-info">
+          <h3>O Panóptico</h3>
+          <div class="ch-sub">A máquina de ver sem ser visto — e o que ela diz sobre a sociedade moderna</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>O Panóptico é um projeto de prisão criado pelo filósofo Jeremy Bentham no século XVIII: uma torre central rodeada por celas dispostas em anel. Do centro, um vigilante pode observar qualquer cela a qualquer momento — mas os presos não conseguem saber quando estão sendo observados.</p>
+        <p>O efeito buscado é preciso: o preso que <em>não sabe se está sendo visto</em> age como se estivesse <em>sempre sendo visto</em>. O controle deixa de precisar de uma vigilância contínua real — ele se torna <strong>automático</strong>, <strong>interiorizado</strong>.</p>
+      </div>
+
+      <!-- DIAGRAMA SVG -->
+      <div class="panoptico">
+        <svg class="pan-svg" viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg">
+          <!-- outer ring -->
+          <circle cx="140" cy="140" r="130" fill="none" stroke="#2a2a2e" stroke-width="1"/>
+          <circle cx="140" cy="140" r="105" fill="none" stroke="#353539" stroke-width="18" stroke-dasharray="none" opacity="0.5"/>
+          <!-- cells -->
+          <g fill="#1a1a1d" stroke="#e05a2b" stroke-width="0.8" opacity="0.85">
+            <rect x="128" y="28" width="24" height="14" rx="1" transform="rotate(0,140,140)"/>
+            <rect x="128" y="28" width="24" height="14" rx="1" transform="rotate(30,140,140)"/>
+            <rect x="128" y="28" width="24" height="14" rx="1" transform="rotate(60,140,140)"/>
+            <rect x="128" y="28" width="24" height="14" rx="1" transform="rotate(90,140,140)"/>
+            <rect x="128" y="28" width="24" height="14" rx="1" transform="rotate(120,140,140)"/>
+            <rect x="128" y="28" width="24" height="14" rx="1" transform="rotate(150,140,140)"/>
+            <rect x="128" y="28" width="24" height="14" rx="1" transform="rotate(180,140,140)"/>
+            <rect x="128" y="28" width="24" height="14" rx="1" transform="rotate(210,140,140)"/>
+            <rect x="128" y="28" width="24" height="14" rx="1" transform="rotate(240,140,140)"/>
+            <rect x="128" y="28" width="24" height="14" rx="1" transform="rotate(270,140,140)"/>
+            <rect x="128" y="28" width="24" height="14" rx="1" transform="rotate(300,140,140)"/>
+            <rect x="128" y="28" width="24" height="14" rx="1" transform="rotate(330,140,140)"/>
+          </g>
+          <!-- sight lines -->
+          <g stroke="#7b61ff" stroke-width="0.5" opacity="0.25">
+            <line x1="140" y1="140" x2="140" y2="42"/>
+            <line x1="140" y1="140" x2="209" y2="75"/>
+            <line x1="140" y1="140" x2="238" y2="140"/>
+            <line x1="140" y1="140" x2="209" y2="205"/>
+            <line x1="140" y1="140" x2="140" y2="238"/>
+            <line x1="140" y1="140" x2="71" y2="205"/>
+            <line x1="140" y1="140" x2="42" y2="140"/>
+            <line x1="140" y1="140" x2="71" y2="75"/>
+          </g>
+          <!-- central tower -->
+          <circle cx="140" cy="140" r="28" fill="#1a1a1d" stroke="#7b61ff" stroke-width="1.5"/>
+          <circle cx="140" cy="140" r="18" fill="#141416" stroke="#7b61ff" stroke-width="0.5" opacity="0.6"/>
+          <text x="140" y="137" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="#7b61ff" letter-spacing="1">TORRE</text>
+          <text x="140" y="148" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="#7b61ff" letter-spacing="1">CENTRAL</text>
+          <!-- label -->
+          <text x="140" y="270" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#6a6a72" letter-spacing="2">PANÓPTICO — BENTHAM, 1791</text>
+        </svg>
+      </div>
+
+      <div class="text">
+        <p>Foucault usa o Panóptico como <strong>metáfora da sociedade disciplinar moderna</strong>. Não porque vivemos em prisões — mas porque o princípio panóptico se generalizou: câmeras de segurança, histórico escolar, prontuário médico, perfil de crédito, algoritmos de redes sociais.</p>
+        <p>A pergunta chave que o Panóptico levanta: <em>quando interiorizamos o olhar do vigilante a ponto de vigiarmos a nós mesmos, quem ainda precisa de um guarda real?</em> A disciplina se torna mais eficiente quando deixa de precisar de força e passa a funcionar pela ameaça permanente de visibilidade.</p>
+      </div>
+      <div class="box">
+        <div class="box-label">// O efeito panóptico hoje</div>
+        <ul>
+          <li><strong>Redes sociais:</strong> Sabemos que somos monitorados — e ajustamos nosso comportamento, criamos uma "persona" pública, autocensuramos. A vigilância é ao mesmo tempo real e interiorzada.</li>
+          <li><strong>Avaliações contínuas:</strong> O estudante que sabe que será avaliado o tempo todo não precisa de punições físicas — a ameaça constante de reprovação disciplina o comportamento.</li>
+          <li><strong>Crédito e reputação digital:</strong> Scores de crédito, avaliações de motoristas/passageiros, sistemas de pontuação social — visibilidade permanente que incentiva a "boa conduta".</li>
+        </ul>
+      </div>
+      <blockquote>
+        <p>O Panóptico é uma máquina de dissociar o par ver-ser visto: no anel periférico, se é totalmente visto, sem nunca ver; na torre central, vê-se tudo, sem nunca ser visto.</p>
+        <cite>— Foucault, Vigiar e Punir</cite>
+      </blockquote>
+    </section>
+
+    <!-- A NORMA -->
+    <section id="vp-norma" class="chapter">
+      <div class="ch-header">
+        <div class="ch-num">06</div>
+        <div class="ch-info">
+          <h3>A Norma</h3>
+          <div class="ch-sub">Como o poder moderno governa pela normalização, não pela lei</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>Uma das contribuições mais sutis de Vigiar e Punir é a distinção entre poder soberano e poder disciplinar. O poder soberano funciona pela <strong>lei</strong>: proíbe, pune, condena. O poder disciplinar funciona pela <strong>norma</strong>: mede, compara, corrige, normaliza.</p>
+        <p>A norma é mais insidiosa que a lei porque não diz apenas "você não pode fazer isso". Ela diz "você está <em>abaixo da média</em>, <em>desviante</em>, <em>anormal</em>". E cria a pressão para se <em>aproximar do normal</em> — que é definido pelo próprio poder que mede.</p>
+      </div>
+      <div class="box box-teal">
+        <div class="box-label">// Lei versus Norma</div>
+        <ul>
+          <li><strong>A lei:</strong> Proíbe atos específicos. Quem não viola a lei está livre. É binária: legal/ilegal.</li>
+          <li><strong>A norma:</strong> Cria um espectro contínuo. Ninguém está completamente fora da norma — todos estão mais ou menos próximos do ideal. Produz hierarquias onde antes havia apenas indivíduos.</li>
+          <li><strong>O exame escolar:</strong> Não apenas reprova quem não sabe — classifica todos numa escala, produz o "brilhante", o "mediano", o "fraco". Cada um interioriza seu lugar na hierarquia.</li>
+          <li><strong>O IMC, QI, testes padronizados:</strong> Dispositivos que criam "a norma" do corpo normal, da inteligência normal — e posicionam cada pessoa em relação a ela.</li>
+        </ul>
+      </div>
+    </section>
+
+    <div class="divider"><span>nascimento da biopolítica</span></div>
+
+    <!-- BIOPOLÍTICA INTRO -->
+    <section id="nb-intro" class="chapter">
+      <div class="book-header">
+        <span class="book-tag">Nascimento da Biopolítica · Curso 1978–79</span>
+        <h2>Nascimento da<br>Biopolítica</h2>
+        <div class="book-sub">Curso no Collège de France — governamentalidade e neoliberalismo</div>
+        <div class="rule"></div>
+      </div>
+      <div class="text">
+        <p>Este é um dos cursos que Foucault ministrou no Collège de France — transcrições das aulas publicadas postumamente. Paradoxalmente, o curso que se chama "Nascimento da Biopolítica" acaba sendo muito mais uma análise do <strong>neoliberalismo</strong> do que da biopolítica em si.</p>
+        <p>Isso é sintomático do método de Foucault: ele começou a investigar a biopolítica mas se deu conta de que, para entendê-la, precisava entender antes como a <em>governamentalidade</em> se transformou — e o neoliberalismo era a transformação mais decisiva em curso.</p>
+      </div>
+    </section>
+
+    <!-- BIOPODER -->
+    <section id="nb-biopoder" class="chapter">
+      <div class="ch-header">
+        <div class="ch-num">07</div>
+        <div class="ch-info">
+          <h3>Biopoder e Biopolítica</h3>
+          <div class="ch-sub">Quando o poder passa a gerir a vida das populações</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>Foucault identifica uma mutação fundamental no poder ocidental a partir do século XVIII: o poder soberano tradicional operava pelo direito de <em>"fazer morrer ou deixar viver"</em>. O soberano podia tirar a vida, mas não tinha controle sobre ela. O biopoder inverte essa lógica: passa a <em>"fazer viver e deixar morrer"</em>.</p>
+        <p>Isso significa que o poder passa a se ocupar da <strong>gestão da vida</strong> — da saúde, da reprodução, da longevidade, da produtividade dos corpos. Não apenas punir os que transgridem, mas otimizar a vida dos que obedecem.</p>
+      </div>
+      <div class="box box-orange">
+        <div class="box-label">// Dois polos do biopoder</div>
+        <ul>
+          <li><strong>Anátomo-política dos corpos:</strong> Poder disciplinar sobre corpos individuais — os mesmos mecanismos de Vigiar e Punir. Torna corpos dóceis, úteis, eficientes. Atua sobre o indivíduo.</li>
+          <li><strong>Biopolítica das populações:</strong> Poder sobre a espécie, sobre o "corpo-espécie". Controla natalidade, mortalidade, morbidade, migrações. Atua sobre a população como um todo, via estatísticas, saúde pública, planejamento urbano.</li>
+        </ul>
+      </div>
+      <div class="text">
+        <p>O exemplo mais brutal do biopoder é o <strong>racismo de Estado</strong>: a lógica de que, para "fazer viver" a população (definida racialmente), é preciso "deixar morrer" — ou matar — aqueles definidos como biologicamente inferiores ou perigosos. O nazismo é o caso limite, mas Foucault o vê como radicalização de uma lógica presente em todo biopoder moderno.</p>
+      </div>
+      <blockquote>
+        <p>Por milênios, o homem permaneceu o que era para Aristóteles: um animal vivo e, além disso, capaz de existência política. O homem moderno é um animal em cuja política sua vida de ser vivo está em questão.</p>
+        <cite>— Foucault, A Vontade de Saber</cite>
+      </blockquote>
+    </section>
+
+    <!-- GOVERNAMENTALIDADE -->
+    <section id="nb-govern" class="chapter">
+      <div class="ch-header">
+        <div class="ch-num">08</div>
+        <div class="ch-info">
+          <h3>Governamentalidade</h3>
+          <div class="ch-sub">A arte de governar — condutas, populações, subjetividades</div>
+        </div>
+      </div>
+      <div class="text">
+        <p><em>Governamentalidade</em> é um conceito-chave de Foucault que vai além do governo político. Ele define governamentalidade como a <strong>condução de condutas</strong> — o conjunto de técnicas, instituições e saberes que buscam guiar o comportamento de indivíduos e populações.</p>
+        <p>Governar, nesse sentido amplo, não é apenas administrar um Estado. É conduzir como as pessoas se alimentam, como cuidam da saúde, como economizam, como educam os filhos, como se relacionam com o risco. O governo moderno é, antes de tudo, uma arte de <em>produzir sujeitos</em> que se governem a si mesmos de certas formas.</p>
+      </div>
+      <div class="box">
+        <div class="box-label">// Três tipos de governamentalidade</div>
+        <ul>
+          <li><strong>Governamentalidade soberana (séc. XVI–XVII):</strong> Governar o território e os súditos. O modelo é o príncipe de Maquiavel — como manter o poder sobre um território. A lei é o instrumento central.</li>
+          <li><strong>Governamentalidade pastoral (influência cristã):</strong> Cuidar de cada ovelha individualmente. Conhecer os pensamentos, conduzir as almas. O confessor, o pastor. Produz o sujeito que se autoexamina e se autoconfessa.</li>
+          <li><strong>Governamentalidade liberal (séc. XVIII–XIX):</strong> Governar através da liberdade. O mercado como lugar de verdade. A população como objeto de saber e alvo de intervenção. A economia política como racionalidade do governo.</li>
+        </ul>
+      </div>
+      <div class="text">
+        <p>A ideia crucial da governamentalidade liberal é que ela <strong>governa através da liberdade</strong>, não apesar dela. Em vez de suprimir a liberdade dos indivíduos, ela a <em>produz, gestiona e utiliza</em> como instrumento de governo. O consumidor "livre" que escolhe no mercado já foi produzido por técnicas que moldaram seus desejos, capacidades e autocompreensão.</p>
+      </div>
+    </section>
+
+    <!-- NEOLIBERALISMO -->
+    <section id="nb-neoliberal" class="chapter">
+      <div class="ch-header">
+        <div class="ch-num">09</div>
+        <div class="ch-info">
+          <h3>Neoliberalismo como governamentalidade</h3>
+          <div class="ch-sub">O capital humano e a produção do sujeito empresarial</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>Foucault analisa o neoliberalismo — especialmente o ordoliberalismo alemão e a escola de Chicago — não como simples política econômica, mas como uma nova <strong>racionalidade de governo</strong> que transforma a relação entre Estado, mercado e sujeito.</p>
+        <p>No neoliberalismo foucaultiano, o mercado não é um dado natural que o Estado deve apenas proteger. O mercado é uma <em>construção</em> que exige intervenção permanente para funcionar. O papel do Estado é construir as condições para a concorrência — e depois governar a população <em>por meio</em> do mercado.</p>
+      </div>
+      <div class="box box-orange">
+        <div class="box-label">// Capital humano — a grande inovação</div>
+        <p style="margin-bottom:12px">O conceito neoliberal de <strong>capital humano</strong> (Becker, Schultz) é para Foucault o sinal mais claro de uma nova forma de produzir sujeitos:</p>
+        <ul>
+          <li><strong>O indivíduo como empresa:</strong> Cada pessoa é pensada como uma "empresa de si mesma" — investe em suas capacidades, gerencia seus riscos, maximiza seu retorno. O vocabulário empresarial coloniza a subjetividade.</li>
+          <li><strong>A educação como investimento:</strong> Estudar não é mais um direito ou um bem coletivo — é um investimento em capital humano que deve gerar retorno individual. A lógica do custo-benefício penetra na formação de pessoas.</li>
+          <li><strong>A saúde como otimização:</strong> Cuidar da saúde não é apenas evitar doenças — é maximizar produtividade, "investir em si mesmo", manter o capital humano em bom estado.</li>
+          <li><strong>O desemprego como fracasso pessoal:</strong> Se você é capital humano, seu desemprego é resultado de um investimento ruim — não de condições estruturais. A responsabilidade individual substitui a análise social.</li>
+        </ul>
+      </div>
+      <div class="text">
+        <p>A análise de Foucault do neoliberalismo — feita no final dos anos 1970, portanto antes do thatcherismo e do reaganismo — é extraordinariamente presciente. Ele não está descrevendo apenas políticas econômicas, mas uma transformação na forma como as pessoas compreendem a si mesmas, suas relações, seus fracassos e sucessos.</p>
+      </div>
+      <blockquote>
+        <p>A sociedade regulada com base no mercado é aquilo a que os neoliberais visam. A generalização da forma econômica do mercado além das trocas monetárias funciona como princípio de inteligibilidade das relações sociais.</p>
+        <cite>— Foucault, Nascimento da Biopolítica</cite>
+      </blockquote>
+    </section>
+
+    <div class="divider"><span>síntese</span></div>
+
+    <!-- SÍNTESE -->
+    <section id="sintese" class="chapter">
+      <div class="book-header">
+        <span class="book-tag">Articulação dos conceitos</span>
+        <h2>Os três eixos<br>do pensamento foucaultiano</h2>
+        <div class="book-sub">Como micropoder, disciplina e governamentalidade se articulam</div>
+        <div class="rule"></div>
+      </div>
+      <div class="text">
+        <p>Os três textos estudados representam momentos distintos do pensamento de Foucault, mas formam uma arquitetura coerente. Não são três "teorias" separadas — são <strong>três eixos analíticos</strong> que se complementam para compreender como o poder opera nas sociedades modernas.</p>
+      </div>
+      <div class="compare-wrap">
+        <table>
+          <tr><th>Dimensão</th><th>Microfísica do Poder</th><th>Vigiar e Punir</th><th>Nasc. da Biopolítica</th></tr>
+          <tr><td><strong>Escala</strong></td><td>Micropoderes cotidianos</td><td>Instituições disciplinares</td><td>Populações e governos</td></tr>
+          <tr><td><strong>Alvo</strong></td><td>Relações de força</td><td>Corpos individuais</td><td>Espécie / subjetividade</td></tr>
+          <tr><td><strong>Instrumento</strong></td><td>Saber-poder</td><td>Vigilância, norma, exame</td><td>Mercado, estatística, risco</td></tr>
+          <tr><td><strong>Efeito</strong></td><td>Produção de verdades</td><td>Corpos dóceis e úteis</td><td>Sujeito empresarial</td></tr>
+          <tr><td><strong>Período</strong></td><td>Geral / transversal</td><td>Séc. XVII–XIX</td><td>Séc. XVIII – presente</td></tr>
+          <tr><td><strong>Conceito-chave</strong></td><td>Relação de forças</td><td>Panóptico / disciplina</td><td>Governamentalidade</td></tr>
+        </table>
+      </div>
+      <div class="text">
+        <p><strong>O fio condutor:</strong> Em todos os três eixos, Foucault desmonta a ilusão de que poder é apenas repressão. O poder <em>produz</em> — produz saberes, produz corpos, produz sujeitos. Compreender o poder não é denunciar quem manda, mas rastrear como formas de conduzir a vida se instalam, se naturalizam e produzem efeitos nos menores detalhes da existência.</p>
+        <p><strong>A pergunta permanente:</strong> Foucault não oferece uma teoria acabada nem um programa político. Ele oferece uma <em>caixa de ferramentas</em> para perguntar, em cada situação concreta: como o poder funciona aqui? Que saberes o legitimam? Que sujeitos ele produz? E — sempre — onde estão as resistências?</p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<script>
+(function() {
+  'use strict';
+
+  // ── PROGRESSO ──
+  window.addEventListener('scroll', function() {
+    var d = document.documentElement;
+    var s = d.scrollTop || document.body.scrollTop;
+    var h = d.scrollHeight - d.clientHeight;
+    document.getElementById('progress-fill').style.width = (h > 0 ? (s / h * 100) : 0) + '%';
+    marcarNavAtiva();
+  });
+
+  // ── NAVEGAÇÃO ──
+  document.querySelectorAll('.nav-link').forEach(function(el) {
+    el.addEventListener('click', function() {
+      var alvo = document.getElementById(this.getAttribute('data-target'));
+      if (alvo) alvo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  function marcarNavAtiva() {
+    var secoes = document.querySelectorAll('.chapter');
+    var ativaId = null;
+    secoes.forEach(function(s) {
+      if (s.getBoundingClientRect().top < 120) ativaId = s.id;
+    });
+    document.querySelectorAll('.nav-link').forEach(function(l) {
+      l.classList.toggle('active', l.getAttribute('data-target') === ativaId);
+    });
+  }
+
+  // ── HIGHLIGHT ──
+  var CORES = { y: '#c9a227', g: '#2bc4a0', b: '#7b61ff', r: '#e05a2b' };
+  var CORES_TEXT = { y: '#0e0e0f', g: '#0e0e0f', b: '#ffffff', r: '#ffffff' };
+  var destaques = [];
+  var proxId = 1;
+  var rangeAtual = null;
+
+  var menu = document.getElementById('hl-menu');
+
+  function fecharMenu() {
+    menu.style.display = 'none';
+    rangeAtual = null;
+  }
+
+  menu.addEventListener('mousedown', function(e) { e.preventDefault(); });
+  menu.addEventListener('touchstart', function(e) { e.preventDefault(); }, { passive: false });
+
+  document.getElementById('hm-fechar').addEventListener('click', function() {
+    fecharMenu();
+    window.getSelection().removeAllRanges();
+  });
+
+  menu.querySelectorAll('.hm-cor').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var cor = this.getAttribute('data-c');
+      if (rangeAtual) aplicarHighlight(rangeAtual, cor);
+      fecharMenu();
+      window.getSelection().removeAllRanges();
+    });
+    btn.addEventListener('touchend', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var cor = this.getAttribute('data-c');
+      if (rangeAtual) aplicarHighlight(rangeAtual, cor);
+      fecharMenu();
+      window.getSelection().removeAllRanges();
+    });
+  });
+
+  function mostrarMenu(e) {
+    var isToque = e && e.type === 'touchend';
+    setTimeout(function() {
+      var sel = window.getSelection();
+      if (!sel || sel.isCollapsed || sel.rangeCount === 0) return;
+      var texto = sel.toString().trim();
+      if (texto.length < 1) return;
+
+      var range = sel.getRangeAt(0);
+      rangeAtual = range.cloneRange();
+
+      var rect = range.getBoundingClientRect();
+      var scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+      var scrollY = window.pageYOffset || document.documentElement.scrollTop;
+
+      var menuX = rect.left + scrollX + rect.width / 2 - 120;
+      var menuY = rect.top + scrollY - 56;
+
+      menu.style.left = Math.max(8, menuX) + 'px';
+      menu.style.top = Math.max(8, menuY) + 'px';
+      menu.style.display = 'flex';
+    }, isToque ? 100 : 20);
+  }
+
+  document.getElementById('content').addEventListener('mouseup', mostrarMenu);
+  document.getElementById('content').addEventListener('touchend', mostrarMenu);
+
+  document.addEventListener('mousedown', function(e) {
+    if (!menu.contains(e.target)) fecharMenu();
+  });
+  document.addEventListener('touchstart', function(e) {
+    if (!menu.contains(e.target)) setTimeout(function() { fecharMenu(); }, 50);
+  }, { passive: true });
+
+  // ── APLICAR HIGHLIGHT ──
+  function aplicarHighlight(range, cor) {
+    var id = proxId++;
+    var anc = range.commonAncestorContainer;
+    var el = anc.nodeType === 3 ? anc.parentElement : anc;
+    var sec = el ? el.closest('.chapter') : null;
+    var secNome = 'Geral';
+    if (sec) {
+      var h = sec.querySelector('h3, h2');
+      if (h) secNome = h.textContent.trim().slice(0, 40);
+    }
+
+    var texto = range.toString().trim();
+    var spans = [];
+    var nos = coletarNosTexto(range);
+
+    nos.forEach(function(no) {
+      var ini = (no === range.startContainer) ? range.startOffset : 0;
+      var fim = (no === range.endContainer)   ? range.endOffset   : no.length;
+      if (ini >= fim) return;
+
+      var antes  = no.nodeValue.slice(0, ini);
+      var meio   = no.nodeValue.slice(ini, fim);
+      var depois = no.nodeValue.slice(fim);
+
+      var span = document.createElement('span');
+      span.style.cssText = 'background:' + CORES[cor] + ';color:' + (CORES_TEXT[cor]||'#0e0e0f') + ';border-radius:2px;cursor:pointer;padding:0 1px;';
+      span.dataset.hid = id;
+      span.title = 'Clique para remover';
+      span.textContent = meio;
+      span.addEventListener('click', function(e) {
+        e.stopPropagation();
+        removerHighlight(id);
+      });
+
+      var frag = document.createDocumentFragment();
+      if (antes)  frag.appendChild(document.createTextNode(antes));
+      frag.appendChild(span);
+      if (depois) frag.appendChild(document.createTextNode(depois));
+      no.parentNode.replaceChild(frag, no);
+      spans.push(span);
+    });
+
+    if (!spans.length) return;
+    destaques.push({ id: id, texto: texto.slice(0, 80), cor: cor, sec: secNome, spans: spans });
+    renderizarLista();
+  }
+
+  function coletarNosTexto(range) {
+    var anc = range.commonAncestorContainer;
+    if (anc.nodeType === 3) return [anc];
+    var nos = [];
+    var walker = document.createTreeWalker(anc, NodeFilter.SHOW_TEXT, null, false);
+    var n;
+    while ((n = walker.nextNode())) {
+      try { if (range.intersectsNode(n)) nos.push(n); } catch(e) {}
+    }
+    return nos;
+  }
+
+  function removerHighlight(id) {
+    var idx = destaques.findIndex(function(h) { return h.id === id; });
+    if (idx === -1) return;
+    destaques[idx].spans.forEach(function(sp) {
+      if (!sp.parentNode) return;
+      var pai = sp.parentNode;
+      while (sp.firstChild) pai.insertBefore(sp.firstChild, sp);
+      pai.removeChild(sp);
+      try { pai.normalize(); } catch(e) {}
+    });
+    destaques.splice(idx, 1);
+    renderizarLista();
+  }
+
+  function renderizarLista() {
+    var lista = document.getElementById('saved-list');
+    if (!destaques.length) {
+      lista.innerHTML = '<span class="saved-empty">selecione texto para marcar</span>';
+      return;
+    }
+    lista.innerHTML = destaques.map(function(h) {
+      var bg = CORES[h.cor] || '#c9a227';
+      var fg = CORES_TEXT[h.cor] || '#0e0e0f';
+      return '<div class="saved-item" style="background:' + bg + ';color:' + fg + '" onclick="__irPara(' + h.id + ')">' +
+        '<div class="saved-tag">' + h.sec + '</div>' +
+        '\u201c' + h.texto + (h.texto.length >= 80 ? '\u2026' : '') + '\u201d' +
+        '</div>';
+    }).join('');
+  }
+
+  window.__irPara = function(id) {
+    var hl = destaques.find(function(h) { return h.id === id; });
+    if (!hl || !hl.spans[0]) return;
+    hl.spans[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    hl.spans.forEach(function(s) {
+      s.style.outline = '2px solid #ffffff';
+      setTimeout(function() { s.style.outline = ''; }, 1600);
+    });
+  };
+
+  document.getElementById('clear-btn').addEventListener('click', function() {
+    destaques.map(function(h) { return h.id; })
+      .forEach(function(id) { try { removerHighlight(id); } catch(e) {} });
+  });
+
+  marcarNavAtiva();
+})();
+</script>
+</body>
+</html>

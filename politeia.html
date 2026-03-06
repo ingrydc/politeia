@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Politeia — Biblioteca de Teoria Política</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --ink: #1a1410;
+  --paper: #f5f0e8;
+  --paper2: #ede8dc;
+  --paper3: #e3ddd0;
+  --gold: #8b6914;
+  --gold-light: #c4a44a;
+  --red: #7a1f1f;
+  --muted: #7a7060;
+  --border: #c8bfa8;
+  --border2: #b8ae98;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Crimson Pro', Georgia, serif;
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  position: relative;
+}
+
+/* ── TEXTURE OVERLAY ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 999;
+  opacity: 0.6;
+}
+
+/* ── HEADER ── */
+header {
+  border-bottom: 2px solid var(--ink);
+  position: relative;
+  overflow: hidden;
+}
+
+.header-top {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 6px 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.header-top span {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  opacity: 0.5;
+  text-transform: uppercase;
+}
+
+.header-main {
+  padding: 48px 48px 36px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: end;
+  background: var(--paper);
+  border-bottom: 1px solid var(--border);
+}
+
+.header-title h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(3rem, 6vw, 5.5rem);
+  font-weight: 900;
+  font-style: italic;
+  line-height: 0.92;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.header-title h1 em {
+  font-style: normal;
+  color: var(--red);
+}
+.header-title p {
+  font-family: 'Crimson Pro', serif;
+  font-size: 1.05rem;
+  color: var(--muted);
+  margin-top: 14px;
+  font-style: italic;
+  max-width: 480px;
+  line-height: 1.6;
+}
+
+.header-meta {
+  text-align: right;
+  padding-bottom: 4px;
+}
+.header-meta .vol {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 4px;
+}
+.header-meta .count {
+  font-family: 'Playfair Display', serif;
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1;
+}
+.header-meta .count-label {
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-style: italic;
+  display: block;
+}
+
+/* ── DECORATIVE RULE ── */
+.ornament {
+  text-align: center;
+  padding: 10px 48px;
+  font-size: 0.7rem;
+  letter-spacing: 0.5em;
+  color: var(--border2);
+  background: var(--paper2);
+  border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', monospace;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.ornament::before, .ornament::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ── FILTERS ── */
+.filters-bar {
+  padding: 18px 48px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--paper);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.filter-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-right: 4px;
+}
+.filter-btn {
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.85rem;
+  padding: 4px 14px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.18s;
+  font-style: italic;
+}
+.filter-btn:hover { border-color: var(--gold); color: var(--gold); }
+.filter-btn.active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+  font-style: normal;
+}
+
+/* ── MAIN GRID ── */
+main {
+  padding: 48px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 28px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.section-head h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.section-head span {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2px;
+  margin-bottom: 64px;
+}
+
+/* ── CARDS ── */
+.card {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  padding: 32px 28px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 280px;
+  text-decoration: none;
+  color: inherit;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--card-accent, var(--gold));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.25s ease;
+}
+.card:hover { background: var(--paper2); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
+.card:hover::before { transform: scaleX(1); }
+
+.card-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--card-accent, var(--gold));
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-tag::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.card h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--ink);
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+.card-author {
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+.card-desc {
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--muted);
+  flex: 1;
+}
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.card-topics {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.card-topic {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 1px;
+}
+.card-arrow {
+  font-size: 1.2rem;
+  color: var(--border2);
+  transition: transform 0.2s, color 0.2s;
+}
+.card:hover .card-arrow { transform: translateX(4px); color: var(--card-accent, var(--gold)); }
+
+/* ── COMING SOON CARD ── */
+.card-soon {
+  border-style: dashed;
+  background: transparent;
+  cursor: default;
+  opacity: 0.55;
+}
+.card-soon:hover { transform: none; box-shadow: none; background: transparent; }
+.card-soon::before { display: none; }
+.card-soon .card-arrow { display: none; }
+.soon-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-top: 14px;
+}
+
+/* ── FEATURED CARD (WIDE) ── */
+.card-wide {
+  grid-column: span 2;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  min-height: 200px;
+}
+.card-wide-left { padding-right: 28px; border-right: 1px solid var(--border); }
+.card-wide-right {
+  padding-left: 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.card-wide-quote {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  font-style: italic;
+  line-height: 1.6;
+  color: var(--ink);
+  position: relative;
+  padding-left: 20px;
+}
+.card-wide-quote::before {
+  content: '"';
+  font-size: 3rem;
+  color: var(--border);
+  position: absolute;
+  left: -8px;
+  top: -8px;
+  line-height: 1;
+}
+
+/* ── ABOUT STRIP ── */
+.about-strip {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 40px 48px;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 48px;
+  align-items: center;
+  border-top: 2px solid var(--ink);
+}
+.about-strip h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem;
+  font-style: italic;
+  line-height: 1.2;
+  color: var(--paper);
+}
+.about-strip p {
+  font-family: 'Crimson Pro', serif;
+  font-size: 1rem;
+  line-height: 1.75;
+  color: rgba(245,240,232,0.65);
+}
+.about-strip strong { color: var(--paper); font-weight: 600; }
+
+/* ── FOOTER ── */
+footer {
+  background: var(--paper2);
+  border-top: 1px solid var(--border);
+  padding: 16px 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+footer span {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .header-main { grid-template-columns: 1fr; padding: 32px 24px 24px; }
+  .header-meta { text-align: left; }
+  .filters-bar, main, .about-strip { padding-left: 24px; padding-right: 24px; }
+  .card-wide { grid-column: span 1; display: flex; flex-direction: column; }
+  .card-wide-left { border-right: none; border-bottom: 1px solid var(--border); padding-right: 0; padding-bottom: 20px; }
+  .card-wide-right { padding-left: 0; padding-top: 20px; }
+  footer { flex-direction: column; gap: 8px; }
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.card {
+  animation: fadeUp 0.4s ease both;
+}
+.card:nth-child(1) { animation-delay: 0.05s; }
+.card:nth-child(2) { animation-delay: 0.1s; }
+.card:nth-child(3) { animation-delay: 0.15s; }
+.card:nth-child(4) { animation-delay: 0.2s; }
+.card:nth-child(5) { animation-delay: 0.25s; }
+.card:nth-child(6) { animation-delay: 0.3s; }
+
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <span>Biblioteca de Teoria Política</span>
+    <span id="today-date"></span>
+  </div>
+  <div class="header-main">
+    <div class="header-title">
+      <h1><em>Politeia</em></h1>
+      <p>Um repositório pessoal de leituras em teoria política — democracia, poder, instituições, pensamento contemporâneo.</p>
+    </div>
+    <div class="header-meta">
+      <span class="vol">Vol. I · 2026</span>
+      <div class="count" id="total-count">2</div>
+      <span class="count-label">leituras disponíveis</span>
+    </div>
+  </div>
+  <div class="ornament">✦ &nbsp; índice de matérias &nbsp; ✦</div>
+</header>
+
+<div class="filters-bar">
+  <span class="filter-label">Filtrar por</span>
+  <button class="filter-btn active" data-filter="all">Todos</button>
+  <button class="filter-btn" data-filter="democracia">Democracia</button>
+  <button class="filter-btn" data-filter="poder">Poder</button>
+  <button class="filter-btn" data-filter="institucoes">Instituições</button>
+  <button class="filter-btn" data-filter="contemporaneo">Contemporâneo</button>
+</div>
+
+<main>
+  <div class="section-head">
+    <h2>Leituras disponíveis</h2>
+    <span>Clique para abrir</span>
+  </div>
+
+  <div class="grid" id="grid">
+
+    <!-- CARD 1 — Schumpeter & Dahl -->
+    <a class="card" href="democracia-procedimental.html"
+       style="--card-accent: #7a1f1f"
+       data-tags="democracia institucoes">
+      <div class="card-tag">Teoria da Democracia</div>
+      <h3>Democracia Procedimental</h3>
+      <div class="card-author">Schumpeter · Dahl</div>
+      <div class="card-desc">
+        Da crítica à teoria clássica ao conceito de poliarquia. Como a democracia se define pelos seus procedimentos — e não pelos seus resultados.
+      </div>
+      <div class="card-footer">
+        <div class="card-topics">
+          <span class="card-topic">método democrático</span>
+          <span class="card-topic">poliarquia</span>
+          <span class="card-topic">elites</span>
+        </div>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <!-- CARD 2 — Foucault -->
+    <a class="card" href="foucault.html"
+       style="--card-accent: #1f4a7a"
+       data-tags="poder contemporaneo">
+      <div class="card-tag">Teoria do Poder</div>
+      <h3>Poder, Disciplina,<br>Governamentalidade</h3>
+      <div class="card-author">Michel Foucault</div>
+      <div class="card-desc">
+        Microfísica do Poder, Vigiar e Punir e Nascimento da Biopolítica — o poder como relação, o panóptico e o sujeito neoliberal.
+      </div>
+      <div class="card-footer">
+        <div class="card-topics">
+          <span class="card-topic">saber-poder</span>
+          <span class="card-topic">panóptico</span>
+          <span class="card-topic">biopoder</span>
+        </div>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <!-- CARD 3 — EM BREVE -->
+    <div class="card card-soon" data-tags="democracia poder institucoes contemporaneo">
+      <div class="card-tag" style="color:var(--muted)">Em construção</div>
+      <h3 style="color:var(--muted)">Próxima leitura</h3>
+      <div class="card-author">—</div>
+      <div class="card-desc">
+        Novo material será adicionado aqui assim que solicitado. Sugestões: Gramsci, Rawls, Arendt, Habermas, Bobbio, Weber…
+      </div>
+      <div class="card-footer">
+        <div class="card-topics">
+          <span class="card-topic">a definir</span>
+        </div>
+      </div>
+      <div class="soon-badge">[ em breve ]</div>
+    </div>
+
+  </div>
+
+  <!-- QUOTE STRIP -->
+  <div class="section-head" style="margin-top:16px">
+    <h2>Para refletir</h2>
+  </div>
+  <div class="grid" style="margin-bottom:0">
+    <div class="card card-wide" style="--card-accent:var(--gold); grid-column: span 2; display:grid; grid-template-columns:1fr 1fr; min-height:180px;">
+      <div style="padding-right:28px; border-right:1px solid var(--border)">
+        <div class="card-tag">Schumpeter, 1942</div>
+        <div class="card-wide-quote">
+          A vontade do povo é o produto, e não a força motriz, do processo político.
+        </div>
+      </div>
+      <div style="padding-left:28px; display:flex; flex-direction:column; justify-content:center;">
+        <div class="card-tag">Foucault, 1975</div>
+        <div class="card-wide-quote">
+          O poder deve ser analisado como algo que circula, ou melhor, como algo que só funciona em cadeia.
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<div class="about-strip">
+  <div>
+    <h3>O que é<br>Politeia?</h3>
+  </div>
+  <div>
+    <p>
+      <strong>Politeia</strong> — palavra grega para constituição, regime, cidade — é um repositório pessoal de leituras em teoria política. Cada módulo é uma página de leitura interativa, com conteúdo explicado de forma acessível e sistema de anotações por destaque de texto. Novos materiais são adicionados conforme novas leituras são trabalhadas.
+    </p>
+    <p style="margin-top:12px">
+      Os temas cobertos incluem <strong>democracia e seus fundamentos</strong>, <strong>teorias do poder</strong>, <strong>pensamento institucional</strong> e <strong>filosofia política contemporânea</strong>. A plataforma cresce junto com as leituras.
+    </p>
+  </div>
+</div>
+
+<footer>
+  <span>Politeia · Biblioteca Pessoal de Teoria Política</span>
+  <span id="footer-count">2 leituras · Vol. I · 2026</span>
+</footer>
+
+<script>
+// Data
+var hoje = new Date();
+var meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+document.getElementById('today-date').textContent =
+  hoje.getDate() + ' ' + meses[hoje.getMonth()] + ' ' + hoje.getFullYear();
+
+// Filtros
+document.querySelectorAll('.filter-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+    this.classList.add('active');
+    var filter = this.getAttribute('data-filter');
+    document.querySelectorAll('.card').forEach(function(card) {
+      if (filter === 'all') {
+        card.classList.remove('hidden');
+        return;
+      }
+      var tags = card.getAttribute('data-tags') || '';
+      if (tags.includes(filter)) {
+        card.classList.remove('hidden');
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+    // update count
+    var visible = document.querySelectorAll('.card:not(.hidden):not(.card-soon)').length;
+    document.getElementById('total-count').textContent = visible;
+  });
+});
+</script>
+</body>
+</html>

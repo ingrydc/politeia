@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Democracia Procedimental</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg:#faf8f4; --surface:#ffffff; --border:#e8e2d9;
+  --text:#2d2416; --muted:#8a7d6b; --accent:#c0392b; --sidebar:280px;
+}
+body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); display:flex; min-height:100vh; }
+
+/* SIDEBAR */
+#sidebar { width:var(--sidebar); background:#1e1a14; color:#f0ebe0; position:fixed; top:0; left:0; height:100vh; overflow-y:auto; display:flex; flex-direction:column; z-index:200; }
+#sidebar-logo { padding:24px 20px 16px; border-bottom:1px solid rgba(255,255,255,0.08); }
+#sidebar-logo h1 { font-family:'Lora',serif; font-size:1rem; font-weight:700; line-height:1.4; }
+#sidebar-logo p { font-size:0.7rem; color:#c0a96a; margin-top:4px; }
+.nav-group { padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.06); }
+.nav-group-label { font-size:0.62rem; font-weight:600; text-transform:uppercase; letter-spacing:0.12em; color:#c0a96a; padding:0 20px 6px; }
+.nav-link { display:block; padding:7px 20px; font-size:0.8rem; color:rgba(240,235,224,0.65); cursor:pointer; border-left:2px solid transparent; transition:all 0.15s; line-height:1.4; }
+.nav-link:hover { color:#f0ebe0; background:rgba(255,255,255,0.04); }
+.nav-link.active { color:#f0ebe0; border-left-color:var(--accent); background:rgba(255,255,255,0.05); }
+
+/* HIGHLIGHT PANEL */
+.hl-panel { padding:14px 20px; border-bottom:1px solid rgba(255,255,255,0.06); }
+.panel-title { font-size:0.62rem; font-weight:600; text-transform:uppercase; letter-spacing:0.12em; color:#c0a96a; margin-bottom:10px; }
+.saved-panel { padding:14px 20px; flex:1; }
+.saved-empty { font-size:0.75rem; color:rgba(240,235,224,0.35); font-style:italic; }
+.saved-item { font-size:0.75rem; border-radius:6px; padding:8px 10px; margin-bottom:8px; cursor:pointer; color:#1e1a14; line-height:1.5; transition:opacity 0.15s; }
+.saved-item:hover { opacity:0.85; }
+.saved-tag { font-size:0.6rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; opacity:0.6; margin-bottom:3px; }
+.clear-btn { font-size:0.7rem; padding:6px 10px; background:rgba(255,255,255,0.06); border:none; border-radius:4px; color:rgba(240,235,224,0.5); cursor:pointer; width:100%; margin-top:10px; }
+.clear-btn:hover { background:rgba(192,57,43,0.3); color:white; }
+
+/* MAIN */
+#main { margin-left:var(--sidebar); flex:1; min-height:100vh; }
+#progress { position:fixed; top:0; left:var(--sidebar); right:0; height:3px; background:rgba(0,0,0,0.08); z-index:300; }
+#progress-fill { height:100%; background:var(--accent); width:0; transition:width 0.1s; }
+#topbar { position:sticky; top:0; background:rgba(250,248,244,0.95); backdrop-filter:blur(8px); border-bottom:1px solid var(--border); padding:12px 48px; display:flex; justify-content:space-between; align-items:center; z-index:100; }
+#topbar-label { font-size:0.75rem; font-weight:600; color:var(--muted); }
+#topbar-hint { font-size:0.72rem; color:var(--muted); }
+
+#content { max-width:720px; margin:0 auto; padding:48px 48px 80px; }
+
+/* CHAPTERS */
+.chapter { margin-bottom:56px; }
+.book-header { margin-bottom:32px; }
+.book-tag { font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.1em; color:var(--accent); }
+.book-header h2 { font-family:'Lora',serif; font-size:2rem; font-weight:700; margin-top:8px; line-height:1.25; }
+.sub { font-size:0.85rem; color:var(--muted); margin-top:8px; }
+.rule { height:2px; background:var(--border); margin-top:20px; }
+.ch-header { display:flex; gap:20px; align-items:flex-start; margin-bottom:24px; }
+.ch-num { font-family:'Lora',serif; font-size:3.5rem; font-weight:700; color:var(--border); line-height:1; flex-shrink:0; width:64px; }
+.ch-info h3 { font-family:'Lora',serif; font-size:1.35rem; font-weight:700; line-height:1.3; }
+.ch-sub { font-size:0.8rem; color:var(--muted); margin-top:4px; }
+.text p { font-family:'Lora',serif; font-size:1rem; line-height:1.8; color:#3a2e1e; margin-bottom:16px; }
+.text p:last-child { margin-bottom:0; }
+.box { background:#fff; border:1px solid var(--border); border-left:3px solid var(--accent); border-radius:0 8px 8px 0; padding:18px 20px; margin:24px 0; }
+.box-label { font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.1em; color:var(--accent); margin-bottom:10px; }
+.box p, .box li { font-size:0.9rem; line-height:1.7; color:#3a2e1e; }
+.box ul { padding-left:18px; }
+.box li { margin-bottom:8px; }
+blockquote { border-left:3px solid #c0a96a; padding:16px 20px; margin:24px 0; background:#fff; border-radius:0 8px 8px 0; }
+blockquote p { font-family:'Lora',serif; font-size:0.95rem; font-style:italic; line-height:1.7; color:#3a2e1e; }
+blockquote cite { font-size:0.75rem; color:var(--muted); margin-top:8px; display:block; font-style:normal; }
+.compare-wrap { overflow-x:auto; margin:24px 0; }
+table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+th { background:#1e1a14; color:#c0a96a; padding:10px 14px; text-align:left; font-weight:600; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.08em; }
+td { padding:10px 14px; border-bottom:1px solid var(--border); color:#3a2e1e; line-height:1.5; vertical-align:top; }
+tr:nth-child(even) td { background:#f5f2ed; }
+.divider { text-align:center; color:var(--border); font-size:1.2rem; letter-spacing:0.4em; padding:24px 0 8px; }
+
+/* FLOATING MENU */
+#hl-menu {
+  position:absolute;
+  display:none;
+  z-index:9999;
+  background:#1e1a14;
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:12px;
+  padding:9px 14px;
+  align-items:center;
+  gap:10px;
+  box-shadow:0 6px 28px rgba(0,0,0,0.4);
+  user-select:none;
+  pointer-events:auto;
+}
+#hl-menu::after {
+  content:'';
+  position:absolute;
+  bottom:-8px;
+  left:50%;
+  transform:translateX(-50%);
+  border-left:8px solid transparent;
+  border-right:8px solid transparent;
+  border-top:8px solid #1e1a14;
+}
+.hm-label { font-family:'Inter',sans-serif; font-size:0.65rem; color:rgba(240,235,224,0.45); white-space:nowrap; }
+.hm-cor {
+  width:28px; height:28px; border-radius:50%;
+  border:2px solid transparent;
+  cursor:pointer;
+  transition:transform 0.12s, border-color 0.12s;
+  outline:none;
+  flex-shrink:0;
+}
+.hm-cor:hover { transform:scale(1.18); border-color:rgba(255,255,255,0.7); }
+.hm-fechar {
+  background:none; border:none;
+  color:rgba(240,235,224,0.35);
+  font-size:0.8rem; cursor:pointer;
+  padding:2px 5px; border-radius:4px;
+  transition:color 0.12s; margin-left:2px;
+}
+.hm-fechar:hover { color:white; }
+</style>
+</head>
+<body>
+
+<!-- FLOATING HIGHLIGHT MENU -->
+<div id="hl-menu">
+  <span class="hm-label">Destacar</span>
+  <button class="hm-cor" data-c="y" style="background:#ffe066" title="Amarelo"></button>
+  <button class="hm-cor" data-c="g" style="background:#6fcf97" title="Verde"></button>
+  <button class="hm-cor" data-c="b" style="background:#74c0fc" title="Azul"></button>
+  <button class="hm-cor" data-c="p" style="background:#da77f2" title="Roxo"></button>
+  <button class="hm-fechar" id="hm-fechar">✕</button>
+</div>
+
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <div id="sidebar-logo">
+    <h1>Democracia<br>Procedimental</h1>
+    <p>Schumpeter · Dahl · Teoria Política</p>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Schumpeter</div>
+    <span class="nav-link" data-target="s-intro">Visão geral</span>
+    <span class="nav-link" data-target="cap21">Cap. 21 — A teoria clássica</span>
+    <span class="nav-link" data-target="cap22">Cap. 22 — Nova definição</span>
+    <span class="nav-link" data-target="cap23">Cap. 23 — Condições necessárias</span>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Dahl</div>
+    <span class="nav-link" data-target="d-intro">Visão geral</span>
+    <span class="nav-link" data-target="dahl1">Cap. 1 — Por que democracia?</span>
+    <span class="nav-link" data-target="dahl2">Cap. 2 — O ideal democrático</span>
+    <span class="nav-link" data-target="dahl3">Cap. 3 — Processo democrático</span>
+    <span class="nav-link" data-target="dahl4">Cap. 4 — Participação e oposição</span>
+    <span class="nav-link" data-target="dahl5">Cap. 5 — Poliarquia</span>
+    <span class="nav-link" data-target="dahl6">Cap. 6 — Por que funciona?</span>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Síntese</div>
+    <span class="nav-link" data-target="sintese">Schumpeter × Dahl</span>
+  </div>
+
+  <div class="hl-panel">
+    <div class="panel-title">📌 Meus destaques</div>
+    <div id="saved-list"><span class="saved-empty">Selecione qualquer texto para destacar.</span></div>
+    <button class="clear-btn" id="clear-btn">Limpar todos</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main id="main">
+  <div id="progress"><div id="progress-fill"></div></div>
+  <div id="topbar">
+    <span id="topbar-label">Democracia Procedimental — Schumpeter &amp; Dahl</span>
+    <span id="topbar-hint">Selecione qualquer trecho para destacar</span>
+  </div>
+
+  <div id="content">
+
+    <section id="s-intro" class="chapter">
+      <div class="book-header">
+        <span class="book-tag">Schumpeter · 1942</span>
+        <h2>Capitalismo, Socialismo e Democracia</h2>
+        <div class="sub">Capítulos 21, 22 e 23</div>
+        <div class="rule"></div>
+      </div>
+      <div class="text">
+        <p>Joseph Schumpeter era um economista austríaco que escreveu este livro durante a Segunda Guerra Mundial. Sua grande contribuição foi criticar a forma como a democracia era explicada até então — e propor uma definição completamente diferente, mais realista e menos idealista.</p>
+        <p>Para ele, as teorias anteriores sobre democracia eram bonitas no papel, mas não correspondiam ao que acontece de verdade na política. Ele queria uma definição que descrevesse o mundo como ele é, não como gostaríamos que fosse.</p>
+      </div>
+    </section>
+
+    <section id="cap21" class="chapter">
+      <div class="ch-header">
+        <div class="ch-num">21</div>
+        <div class="ch-info">
+          <h3>O problema com a teoria clássica</h3>
+          <div class="ch-sub">Por que a visão tradicional de democracia não funciona</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>A teoria "clássica" dizia que democracia é o governo que busca o <strong>bem comum</strong> — o que é bom para todo mundo — por meio da vontade do povo. Soa bonito. O problema é que Schumpeter mostrou que isso não faz sentido na prática.</p>
+        <p><strong>Primeiro problema: não existe "bem comum" claro.</strong> Pessoas têm interesses diferentes. O que é bom para um trabalhador pode ser ruim para um empresário. O que é bom para a cidade pode ser ruim para o campo. Não há uma resposta certa que todos concordem.</p>
+        <p><strong>Segundo problema: a "vontade do povo" é uma ilusão.</strong> A maioria das pessoas não tem opiniões formadas sobre a maioria dos assuntos políticos. Quem diz o que o povo quer? Geralmente são os próprios políticos, partidos e a mídia que constroem essa "vontade".</p>
+      </div>
+      <div class="box">
+        <div class="box-label">💡 Ideia central</div>
+        <p>Fora do trabalho ou da vida pessoal, as pessoas tendem a ser menos racionais e mais fáceis de manipular. Em política, aceitamos informações superficiais, seguimos emoções e nos deixamos influenciar por propaganda. Isso não significa que somos burros — é como a mente funciona quando não há consequências diretas nas nossas escolhas.</p>
+      </div>
+      <div class="text">
+        <p>Conclusão: a teoria clássica confunde o que deveria ser (um governo que realiza o bem comum) com o que é possível ser (um sistema que funciona com pessoas reais, motivações reais e informações imperfeitas).</p>
+      </div>
+      <blockquote>
+        <p>"A vontade do povo é o produto, e não a força motriz, do processo político."</p>
+        <cite>Schumpeter, Capítulo 21</cite>
+      </blockquote>
+      <div class="text">
+        <p>Ou seja: não é que o povo decide e os políticos executam. É o contrário — os políticos e partidos moldam o que o povo pensa e quer.</p>
+      </div>
+    </section>
+
+    <section id="cap22" class="chapter">
+      <div class="ch-header">
+        <div class="ch-num">22</div>
+        <div class="ch-info">
+          <h3>A nova definição de democracia</h3>
+          <div class="ch-sub">Democracia como competição — igual a um mercado</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>Se a definição antiga não funciona, qual funciona? Schumpeter propõe uma resposta direta: democracia é um <strong>método</strong>, um jeito de escolher quem vai governar.</p>
+        <p>Ele compara a política com o mercado econômico. Assim como empresas competem pelos clientes, <strong>políticos e partidos competem pelos votos</strong>. O eleitor é como um consumidor: escolhe entre as opções que existem, mas raramente participa de criar essas opções.</p>
+      </div>
+      <div class="box">
+        <div class="box-label">📌 A definição de Schumpeter</div>
+        <p>"Democracia é o arranjo institucional para chegar a decisões políticas em que os indivíduos adquirem o poder de decidir através de uma disputa competitiva pelos votos do eleitorado."</p>
+      </div>
+      <div class="text">
+        <p>O que isso muda na prática? O povo <strong>não governa</strong> — ele escolhe quem vai governar. O papel do eleitor é <strong>aprovar ou reprovar</strong> quem está no poder, nas eleições. O que importa é que a competição seja <strong>real e livre</strong>.</p>
+        <p>Schumpeter argumenta que isso já é muito: um governo que pode ser derrubado nas urnas tem motivo para não abusar demais do poder. E a competição entre políticos funciona como um filtro que tende a selecionar quem sabe se comunicar e mobilizar pessoas.</p>
+      </div>
+      <blockquote>
+        <p>Schumpeter não disse que democracia é melhor porque produz decisões melhores. Ele disse que é útil porque <strong>evita concentração de poder</strong> e permite trocar governos sem violência.</p>
+        <cite>Capítulo 22 — interpretação</cite>
+      </blockquote>
+    </section>
+
+    <section id="cap23" class="chapter">
+      <div class="ch-header">
+        <div class="ch-num">23</div>
+        <div class="ch-info">
+          <h3>Quando a democracia funciona?</h3>
+          <div class="ch-sub">As condições necessárias para o método democrático dar certo</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>Schumpeter não achava que democracia funciona em qualquer lugar, de qualquer jeito. Ele listou quatro condições necessárias.</p>
+      </div>
+      <div class="box">
+        <div class="box-label">✅ As 4 condições de Schumpeter</div>
+        <ul>
+          <li><strong>Políticos de qualidade:</strong> A democracia precisa de pessoas capazes e dispostas a respeitar as regras. Sem isso, a competição vira bagunça ou demagogia.</li>
+          <li><strong>Agenda limitada:</strong> Alguns assuntos são técnicos demais para serem decididos por voto popular. Política monetária, por exemplo, funciona melhor nas mãos de especialistas independentes.</li>
+          <li><strong>Burocracia profissional:</strong> É preciso ter funcionários públicos bem treinados que continuem trabalhando independentemente de quem ganhou a eleição. Sem isso, cada mudança de governo desorganiza tudo.</li>
+          <li><strong>Autocontrole democrático:</strong> Quem perde a eleição tem que aceitar a derrota. Quem ganha não pode perseguir a oposição. Sem esse respeito mútuo, o sistema entra em colapso.</li>
+        </ul>
+      </div>
+      <div class="text">
+        <p>Essa última condição é especialmente importante. Schumpeter chama de <strong>"autocontrole democrático"</strong>: a disposição de todos de respeitar as regras do jogo, mesmo quando perdem. Isso é uma questão de cultura política — não dá para criar por decreto.</p>
+      </div>
+    </section>
+
+    <div class="divider">· · ·</div>
+
+    <section id="d-intro" class="chapter">
+      <div class="book-header">
+        <span class="book-tag">Robert Dahl · 1998</span>
+        <h2>Sobre a Democracia</h2>
+        <div class="sub">Capítulos 1 ao 6</div>
+        <div class="rule"></div>
+      </div>
+      <div class="text">
+        <p>Robert Dahl foi um cientista político americano e um dos maiores estudiosos de democracia do século XX. Diferente de Schumpeter, ele não era cínico — queria entender <em>o que torna um regime verdadeiramente democrático</em> e criar critérios claros para isso.</p>
+        <p>Seu livro "Sobre a Democracia" é escrito de forma acessível e foi pensado para o grande público. Ele parte de uma pergunta simples: <em>por que democracia?</em> — e vai construindo uma resposta cuidadosa ao longo dos capítulos.</p>
+      </div>
+    </section>
+
+    <section id="dahl1" class="chapter">
+      <div class="ch-header">
+        <div class="ch-num">1</div>
+        <div class="ch-info">
+          <h3>Por que democracia?</h3>
+          <div class="ch-sub">Os argumentos práticos a favor do regime democrático</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>Dahl começa o livro com uma pergunta direta: por que deveríamos preferir democracia a outros sistemas? Ele oferece uma resposta honesta — não começa com o ideal, mas com os argumentos práticos.</p>
+      </div>
+      <div class="box">
+        <div class="box-label">🏆 Argumentos de Dahl para a democracia</div>
+        <ul>
+          <li><strong>Evita tirania:</strong> Governos sem controle tendem a abusar do poder. A democracia cria mecanismos para limitar isso.</li>
+          <li><strong>Protege direitos fundamentais:</strong> Liberdade de expressão, de religião, de ir e vir — esses direitos são muito mais protegidos em democracias.</li>
+          <li><strong>Garante liberdade geral:</strong> Democracias oferecem mais liberdade para mais pessoas do que outros regimes.</li>
+          <li><strong>Autodeterminação:</strong> As pessoas podem influenciar as leis que as governam — têm agência sobre sua própria vida coletiva.</li>
+          <li><strong>Autonomia moral:</strong> A democracia permite que as pessoas façam suas próprias escolhas morais, sem serem forçadas pelo Estado.</li>
+          <li><strong>Desenvolvimento humano:</strong> Participar da política desenvolve capacidades cognitivas e morais — cidadania ativa torna as pessoas mais capazes.</li>
+          <li><strong>Paz entre democracias:</strong> Democracias raramente fazem guerra umas contra as outras — há evidência histórica forte disso.</li>
+          <li><strong>Prosperidade:</strong> Países democráticos tendem a ter economias mais desenvolvidas e melhores condições de vida.</li>
+        </ul>
+      </div>
+      <div class="text">
+        <p>Dahl não diz que a democracia é perfeita. Ele diz que, <em>comparada às alternativas</em>, ela oferece muito mais. O argumento é pragmático: não é que a democracia realiza o paraíso, mas que os outros sistemas realizaram o inferno.</p>
+      </div>
+    </section>
+
+    <section id="dahl2" class="chapter">
+      <div class="ch-header">
+        <div class="ch-num">2</div>
+        <div class="ch-info">
+          <h3>O ideal democrático</h3>
+          <div class="ch-sub">A base moral da democracia: igualdade intrínseca</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>Dahl vai mais fundo: qual é a <em>base moral</em> da democracia? Por que as pessoas deveriam ter o direito de participar das decisões que as afetam?</p>
+        <p>A resposta dele é a <strong>igualdade intrínseca</strong>: todos os seres humanos têm igual valor moral. Não há critério neutro para dizer que uma pessoa vale mais do que outra quando se trata de definir as regras que governarão a todos.</p>
+        <p>Se todos valem igualmente, então todos deveriam ter igual voz nas decisões coletivas. Democracia é a consequência lógica desse princípio.</p>
+      </div>
+      <blockquote>
+        <p>Nenhum adulto deveria ser governado por leis que não teve oportunidade de influenciar.</p>
+        <cite>Dahl, Capítulo 2 — princípio da inclusão</cite>
+      </blockquote>
+    </section>
+
+    <section id="dahl3" class="chapter">
+      <div class="ch-header">
+        <div class="ch-num">3</div>
+        <div class="ch-info">
+          <h3>O processo democrático</h3>
+          <div class="ch-sub">Os 5 critérios que definem se um processo é realmente democrático</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>Este é o capítulo mais famoso do livro. Dahl define 5 critérios que um processo de decisão coletiva precisa satisfazer para ser genuinamente democrático. São como uma "lista de checagem" para avaliar qualquer sistema político.</p>
+      </div>
+      <div class="box">
+        <div class="box-label">📋 Os 5 critérios de Dahl</div>
+        <ul>
+          <li><strong>1. Participação efetiva:</strong> Antes de qualquer decisão ser tomada, todos devem ter a chance real de dizer o que pensam e defender sua posição.</li>
+          <li><strong>2. Igualdade de voto:</strong> Na hora de decidir, cada pessoa tem um voto — e todos os votos valem o mesmo.</li>
+          <li><strong>3. Entendimento esclarecido:</strong> As pessoas precisam ter acesso à informação real. Votar sem entender o que está sendo decidido não é democracia — é teatro.</li>
+          <li><strong>4. Controle da pauta:</strong> Os cidadãos devem ter poder de decidir quais assuntos entram na agenda política. Se só as elites definem o que pode ser discutido, algo está errado.</li>
+          <li><strong>5. Inclusão de todos os adultos:</strong> Todos os adultos que vivem sob as leis devem ter direito de participar. Excluir grupos — mulheres, pobres, minorias — quebra a democracia.</li>
+        </ul>
+      </div>
+      <div class="text">
+        <p>O critério 3 — entendimento esclarecido — é especialmente relevante hoje. Uma democracia onde as pessoas votam com base em desinformação ou fake news está ferindo esse critério, mesmo que as eleições sejam tecnicamente livres e limpas.</p>
+        <p>O critério 4 — controle da pauta — é o mais exigente. Quando grupos econômicos ou elites políticas controlam o que pode ou não ser debatido, o processo democrático fica comprometido.</p>
+      </div>
+    </section>
+
+    <section id="dahl4" class="chapter">
+      <div class="ch-header">
+        <div class="ch-num">4</div>
+        <div class="ch-info">
+          <h3>Participação e oposição</h3>
+          <div class="ch-sub">As duas dimensões para classificar regimes políticos</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>Dahl propõe dois eixos para classificar qualquer governo do mundo:</p>
+        <p><strong>Eixo 1 — Participação:</strong> Quanta gente pode participar? Quem tem direito de votar, de se candidatar, de fazer parte da vida política?</p>
+        <p><strong>Eixo 2 — Contestação:</strong> A oposição pode funcionar livremente? Há eleições competitivas de verdade? A imprensa é livre? As pessoas podem criticar o governo sem ser presas?</p>
+      </div>
+      <div class="box">
+        <div class="box-label">🗺 Tipos de regime</div>
+        <ul>
+          <li><strong>Hegemonia fechada:</strong> Baixa participação + sem oposição. (Ditaduras tradicionais)</li>
+          <li><strong>Oligarquia competitiva:</strong> Oposição existe, mas só os ricos participam. (Democracias do século XIX)</li>
+          <li><strong>Hegemonia inclusiva:</strong> Participação ampla, mas sem oposição real. (Regimes de partido único)</li>
+          <li><strong>Poliarquia:</strong> Alta participação + oposição livre. É o que chamamos de "democracia" hoje.</li>
+        </ul>
+      </div>
+      <div class="text">
+        <p>Esse esquema mostra que "ter eleições" não é suficiente. Um país pode ter eleições e ainda assim ser antidemocrático, se a oposição é perseguida ou se a maioria da população não pode votar.</p>
+      </div>
+    </section>
+
+    <section id="dahl5" class="chapter">
+      <div class="ch-header">
+        <div class="ch-num">5</div>
+        <div class="ch-info">
+          <h3>Poliarquia</h3>
+          <div class="ch-sub">O nome que Dahl deu à democracia real — imperfeita, mas funcional</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>Aqui está um dos conceitos mais importantes de Dahl: <strong>poliarquia</strong>. A palavra vem do grego e significa "governo de muitos". Por que criar esse novo nome?</p>
+        <p>Porque "democracia plena" — aquela que satisfaz os 5 critérios completamente — nunca existiu na história. Os países que chamamos de "democracias" são, na verdade, aproximações imperfeitas desse ideal. Dahl chama essas aproximações reais de <strong>poliarquias</strong>.</p>
+      </div>
+      <div class="box">
+        <div class="box-label">🏛 O que define uma poliarquia?</div>
+        <ul>
+          <li>Funcionários escolhidos por eleições</li>
+          <li>Eleições livres, justas e frequentes</li>
+          <li>Direito de voto para todos os adultos</li>
+          <li>Direito de se candidatar a cargos</li>
+          <li>Liberdade de expressão garantida</li>
+          <li>Fontes de informação alternativas (imprensa livre)</li>
+          <li>Direito de formar partidos e associações</li>
+        </ul>
+      </div>
+      <div class="text">
+        <p>A distinção é intelectualmente honesta: em vez de chamar os EUA, Brasil ou França de "democracias perfeitas", Dahl reconhece que são poliarquias — sistemas que se aproximam do ideal, mas que ainda têm falhas e problemas a resolver.</p>
+      </div>
+    </section>
+
+    <section id="dahl6" class="chapter">
+      <div class="ch-header">
+        <div class="ch-num">6</div>
+        <div class="ch-info">
+          <h3>Por que a poliarquia funciona em alguns países?</h3>
+          <div class="ch-sub">As condições que permitem que a democracia se desenvolva e sobreviva</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>Por que alguns países conseguem construir democracias estáveis e outros não? Dahl identifica fatores que ajudam ou dificultam esse processo.</p>
+      </div>
+      <div class="box">
+        <div class="box-label">🔑 Condições favoráveis à poliarquia</div>
+        <ul>
+          <li><strong>Militares sob controle civil:</strong> Se os militares obedecem ao governo eleito, a democracia sobrevive. Se o exército decide quem governa, não.</li>
+          <li><strong>Sem interferência estrangeira hostil:</strong> Muitas democracias foram destruídas por potências externas que preferiam governos dóceis.</li>
+          <li><strong>Poder econômico disperso:</strong> Quando o poder econômico está concentrado em poucas mãos, essas mãos tendem a controlar também o poder político.</li>
+          <li><strong>Cultura política democrática:</strong> Tanto as elites quanto os cidadãos precisam acreditar nos valores democráticos — respeitar o resultado das eleições, aceitar a oposição.</li>
+          <li><strong>Sem divisões internas muito intensas:</strong> Sociedades com conflitos étnicos ou religiosos muito profundos têm mais dificuldade de construir a confiança necessária para a democracia funcionar.</li>
+        </ul>
+      </div>
+      <div class="text">
+        <p>O ponto sobre cultura política é fundamental: democracia não é só um conjunto de leis e instituições. É também um conjunto de <em>hábitos e valores</em>. Se os políticos e cidadãos não acreditam nas regras do jogo, as instituições viram casca vazia.</p>
+      </div>
+    </section>
+
+    <div class="divider">· · ·</div>
+
+    <section id="sintese" class="chapter">
+      <div class="book-header">
+        <span class="book-tag">Comparação</span>
+        <h2>Schumpeter × Dahl</h2>
+        <div class="sub">Semelhanças, diferenças e o que fica de cada um</div>
+        <div class="rule"></div>
+      </div>
+      <div class="text">
+        <p>Os dois pensadores fazem parte da mesma tradição — a <strong>democracia procedimental</strong> — que define democracia pelos seus <em>procedimentos</em> (como as decisões são tomadas), e não pelo conteúdo das decisões. Mas chegam a conclusões bastante diferentes.</p>
+      </div>
+      <div class="compare-wrap">
+        <table>
+          <tr><th>Aspecto</th><th>Schumpeter</th><th>Dahl</th></tr>
+          <tr><td><strong>O que é democracia?</strong></td><td>Um método: elites competem por votos</td><td>Um processo com 5 critérios a cumprir</td></tr>
+          <tr><td><strong>Papel do cidadão</strong></td><td>Passivo — escolhe entre elites</td><td>Ativo — deve participar e ser informado</td></tr>
+          <tr><td><strong>Tom geral</strong></td><td>Realista e cético</td><td>Normativo e propositivo</td></tr>
+          <tr><td><strong>O povo é racional?</strong></td><td>Não — é manipulável e desinformado</td><td>Deve ser — daí a exigência de informação</td></tr>
+          <tr><td><strong>Conceito-chave</strong></td><td>Método democrático / competição eleitoral</td><td>Poliarquia / 5 critérios do processo</td></tr>
+          <tr><td><strong>Igualdade política</strong></td><td>Aceitável que alguns influenciem mais</td><td>Igualdade de participação é exigência central</td></tr>
+        </table>
+      </div>
+      <div class="text">
+        <p><strong>O que eles concordam:</strong> Ambos rejeitam a ideia de que democracia é sobre descobrir o "bem comum". Para os dois, democracia é sobre <em>procedimento</em> — eleições, competição, alternância de poder. E os dois reconhecem que as democracias reais estão longe do ideal.</p>
+        <p><strong>A grande tensão:</strong> Schumpeter praticamente descarta o cidadão — o eleitor é passivo e manipulável, e tudo bem. Dahl não aceita isso: exige que os cidadãos tenham acesso real à informação e possam participar de verdade. Para Dahl, uma democracia onde só as elites decidem o que é discutido é uma democracia incompleta.</p>
+        <p><strong>O que fica:</strong> Schumpeter nos ensina a ser realistas — democracia não é paraíso. Dahl nos ensina a ser exigentes — democracia tem critérios, e podemos (e devemos) perguntar se estão sendo cumpridos.</p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<script>
+(function() {
+  'use strict';
+
+  // ── PROGRESSO DE LEITURA ──
+  window.addEventListener('scroll', function() {
+    var d = document.documentElement;
+    var s = d.scrollTop || document.body.scrollTop;
+    var h = d.scrollHeight - d.clientHeight;
+    document.getElementById('progress-fill').style.width = (h > 0 ? (s / h * 100) : 0) + '%';
+    marcarNavAtiva();
+  });
+
+  // ── NAVEGAÇÃO ──
+  document.querySelectorAll('.nav-link').forEach(function(el) {
+    el.addEventListener('click', function() {
+      var alvo = document.getElementById(this.getAttribute('data-target'));
+      if (alvo) alvo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  function marcarNavAtiva() {
+    var secoes = document.querySelectorAll('.chapter');
+    var ativaId = null;
+    secoes.forEach(function(s) {
+      if (s.getBoundingClientRect().top < 120) ativaId = s.id;
+    });
+    document.querySelectorAll('.nav-link').forEach(function(l) {
+      l.classList.toggle('active', l.getAttribute('data-target') === ativaId);
+    });
+  }
+
+  // ── HIGHLIGHT ──
+  var CORES = { y: '#ffe066', g: '#6fcf97', b: '#74c0fc', p: '#da77f2' };
+  var destaques = [];
+  var proxId = 1;
+  var rangeAtual = null;
+
+  var menu = document.getElementById('hl-menu');
+
+  function fecharMenu() {
+    menu.style.display = 'none';
+    rangeAtual = null;
+  }
+
+  // Previne que clique no menu destrua a seleção
+  menu.addEventListener('mousedown', function(e) { e.preventDefault(); });
+  menu.addEventListener('touchstart', function(e) { e.stopPropagation(); }, { passive: true });
+
+  document.getElementById('hm-fechar').addEventListener('click', function() {
+    fecharMenu();
+    window.getSelection().removeAllRanges();
+  });
+
+  // Clique numa cor do menu (mouse + touch)
+  menu.querySelectorAll('.hm-cor').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var cor = this.getAttribute('data-c');
+      if (rangeAtual) aplicarHighlight(rangeAtual, cor);
+      fecharMenu();
+      window.getSelection().removeAllRanges();
+    });
+    btn.addEventListener('touchend', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var cor = this.getAttribute('data-c');
+      if (rangeAtual) aplicarHighlight(rangeAtual, cor);
+      fecharMenu();
+      window.getSelection().removeAllRanges();
+    });
+  });
+
+  // Detectar seleção de texto no conteúdo (mouse + toque)
+  function mostrarMenu(e) {
+    var isToque = e && e.type === 'touchend';
+    setTimeout(function() {
+      var sel = window.getSelection();
+      if (!sel || sel.isCollapsed || sel.rangeCount === 0) return;
+      var texto = sel.toString().trim();
+      if (texto.length < 1) return;
+
+      var range = sel.getRangeAt(0);
+      rangeAtual = range.cloneRange();
+
+      var rect = range.getBoundingClientRect();
+      var scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+      var scrollY = window.pageYOffset || document.documentElement.scrollTop;
+
+      var menuX = rect.left + scrollX + rect.width / 2 - 110;
+      var menuY = rect.top + scrollY - 55;
+
+      menu.style.left = Math.max(8, menuX) + 'px';
+      menu.style.top = Math.max(8, menuY) + 'px';
+      menu.style.display = 'flex';
+    }, isToque ? 100 : 20);
+  }
+
+  document.getElementById('content').addEventListener('mouseup', mostrarMenu);
+  document.getElementById('content').addEventListener('touchend', mostrarMenu);
+
+  // Fechar menu ao clicar/tocar fora
+  document.addEventListener('mousedown', function(e) {
+    if (!menu.contains(e.target)) fecharMenu();
+  });
+  document.addEventListener('touchstart', function(e) {
+    if (!menu.contains(e.target)) setTimeout(function() { fecharMenu(); }, 50);
+  }, { passive: true });
+
+  // ── APLICAR HIGHLIGHT ──
+  function aplicarHighlight(range, cor) {
+    var id = proxId++;
+    var anc = range.commonAncestorContainer;
+    var secNome = 'Geral';
+    var el = anc.nodeType === 3 ? anc.parentElement : anc;
+    var sec = el ? el.closest('.chapter') : null;
+    if (sec) {
+      var h = sec.querySelector('h3, h2');
+      if (h) secNome = h.textContent.trim().slice(0, 45);
+    }
+
+    var texto = range.toString().trim();
+    var spans = [];
+    var nos = coletarNosTexto(range);
+
+    nos.forEach(function(no) {
+      var ini = (no === range.startContainer) ? range.startOffset : 0;
+      var fim = (no === range.endContainer)   ? range.endOffset   : no.length;
+      if (ini >= fim) return;
+
+      var antes  = no.nodeValue.slice(0, ini);
+      var meio   = no.nodeValue.slice(ini, fim);
+      var depois = no.nodeValue.slice(fim);
+
+      var span = document.createElement('span');
+      span.style.cssText = 'background:' + CORES[cor] + ';border-radius:2px;cursor:pointer;padding:0 1px;';
+      span.dataset.hid = id;
+      span.title = 'Clique para remover destaque';
+      span.textContent = meio;
+      span.addEventListener('click', function(e) {
+        e.stopPropagation();
+        removerHighlight(id);
+      });
+
+      var frag = document.createDocumentFragment();
+      if (antes)  frag.appendChild(document.createTextNode(antes));
+      frag.appendChild(span);
+      if (depois) frag.appendChild(document.createTextNode(depois));
+
+      no.parentNode.replaceChild(frag, no);
+      spans.push(span);
+    });
+
+    if (!spans.length) return;
+    destaques.push({ id: id, texto: texto.slice(0, 80), cor: cor, sec: secNome, spans: spans });
+    renderizarLista();
+  }
+
+  function coletarNosTexto(range) {
+    var anc = range.commonAncestorContainer;
+    // Seleção dentro de um único nó de texto
+    if (anc.nodeType === 3) return [anc];
+    // Seleção cruzando elementos
+    var nos = [];
+    var walker = document.createTreeWalker(anc, NodeFilter.SHOW_TEXT, null, false);
+    var n;
+    while ((n = walker.nextNode())) {
+      try {
+        if (range.intersectsNode(n)) nos.push(n);
+      } catch(e) {}
+    }
+    return nos;
+  }
+
+  // ── REMOVER HIGHLIGHT ──
+  function removerHighlight(id) {
+    var idx = -1;
+    for (var i = 0; i < destaques.length; i++) {
+      if (destaques[i].id === id) { idx = i; break; }
+    }
+    if (idx === -1) return;
+    var hl = destaques[idx];
+    hl.spans.forEach(function(sp) {
+      if (!sp.parentNode) return;
+      var pai = sp.parentNode;
+      while (sp.firstChild) pai.insertBefore(sp.firstChild, sp);
+      pai.removeChild(sp);
+      try { pai.normalize(); } catch(e) {}
+    });
+    destaques.splice(idx, 1);
+    renderizarLista();
+  }
+
+  // ── LISTA DE DESTAQUES ──
+  function renderizarLista() {
+    var lista = document.getElementById('saved-list');
+    if (!destaques.length) {
+      lista.innerHTML = '<span class="saved-empty">Selecione qualquer texto para destacar.</span>';
+      return;
+    }
+    lista.innerHTML = destaques.map(function(h) {
+      return '<div class="saved-item" style="background:' + CORES[h.cor] + '" onclick="__irPara(' + h.id + ')">' +
+        '<div class="saved-tag">' + h.sec + '</div>' +
+        '\u201c' + h.texto + (h.texto.length >= 80 ? '\u2026' : '') + '\u201d' +
+        '</div>';
+    }).join('');
+  }
+
+  window.__irPara = function(id) {
+    var hl = null;
+    for (var i = 0; i < destaques.length; i++) {
+      if (destaques[i].id === id) { hl = destaques[i]; break; }
+    }
+    if (!hl || !hl.spans[0]) return;
+    hl.spans[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    hl.spans.forEach(function(s) {
+      s.style.outline = '2px solid #c0392b';
+      setTimeout(function() { s.style.outline = ''; }, 1600);
+    });
+  };
+
+  document.getElementById('clear-btn').addEventListener('click', function() {
+    var ids = destaques.map(function(h) { return h.id; });
+    ids.forEach(function(id) { try { removerHighlight(id); } catch(e) {} });
+  });
+
+  marcarNavAtiva();
+})();
+</script>
+</body>
+</html>
