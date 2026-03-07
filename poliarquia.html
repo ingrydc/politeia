@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Poliarquia — Avaliador de Qualidade Democrática</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg:       #111214;
+  --surface:  #18191d;
+  --surface2: #1f2027;
+  --surface3: #26272f;
+  --border:   #2e3038;
+  --border2:  #3a3c47;
+  --text:     #c9cad4;
+  --text-dim: #5e6070;
+  --text-bright: #edeef5;
+  --mono: 'DM Mono', monospace;
+  --serif: 'DM Serif Display', serif;
+  --sans: 'DM Sans', sans-serif;
+  --green:  #3ecf7a;
+  --yellow: #f5c842;
+  --orange: #f58a42;
+  --red:    #e05252;
+  --blue:   #5b9cf6;
+}
+
+html { scroll-behavior: smooth; }
+body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* ── HEADER ── */
+header {
+  border-bottom: 1px solid var(--border);
+  padding: 0 40px;
+  background: var(--surface);
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: stretch; gap: 0;
+}
+.header-brand {
+  display: flex; align-items: center; gap: 14px;
+  padding: 18px 0;
+  border-right: 1px solid var(--border);
+  padding-right: 28px; margin-right: 28px;
+}
+.brand-icon {
+  width: 32px; height: 32px;
+  background: var(--blue);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--serif); font-size: 1rem; color: white; font-style: italic;
+}
+.brand-text h1 { font-family: var(--mono); font-size: 0.85rem; font-weight: 500; color: var(--text-bright); letter-spacing: -0.01em; }
+.brand-text p  { font-family: var(--mono); font-size: 0.6rem; color: var(--text-dim); margin-top: 1px; letter-spacing: 0.05em; }
+.header-nav { display: flex; align-items: center; gap: 6px; flex: 1; }
+.nav-chip {
+  font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.06em;
+  padding: 5px 10px; border-radius: 4px;
+  border: 1px solid transparent; color: var(--text-dim); cursor: default;
+  text-transform: uppercase;
+}
+.nav-chip.active { background: rgba(91,156,246,0.1); border-color: rgba(91,156,246,0.3); color: var(--blue); }
+.header-ref { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.ref-tag { font-family: var(--mono); font-size: 0.58rem; color: var(--text-dim); letter-spacing: 0.08em; }
+
+/* ── MAIN LAYOUT ── */
+.layout { display: grid; grid-template-columns: 340px 1fr; min-height: calc(100vh - 69px); }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  overflow-y: auto;
+}
+.sidebar-section { padding: 24px; border-bottom: 1px solid var(--border); }
+.sidebar-label {
+  font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--text-dim); margin-bottom: 14px;
+}
+
+/* Country selector */
+.country-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.country-btn {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 12px 10px;
+  cursor: pointer; transition: all 0.15s;
+  text-align: left;
+}
+.country-btn:hover { border-color: var(--border2); background: var(--surface3); }
+.country-btn.active { border-color: var(--blue); background: rgba(91,156,246,0.08); }
+.country-flag { font-size: 1.4rem; display: block; margin-bottom: 6px; }
+.country-name { font-family: var(--mono); font-size: 0.7rem; color: var(--text-bright); font-weight: 500; display: block; }
+.country-score-mini {
+  font-family: var(--mono); font-size: 0.6rem; margin-top: 4px; display: block;
+}
+
+/* Score legend */
+.legend { display: flex; flex-direction: column; gap: 8px; }
+.legend-item { display: flex; align-items: center; gap: 10px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+.legend-text { font-family: var(--mono); font-size: 0.65rem; color: var(--text); }
+
+/* Criteria list */
+.criteria-list { display: flex; flex-direction: column; gap: 4px; }
+.criteria-item {
+  font-family: var(--mono); font-size: 0.68rem; color: var(--text-dim);
+  padding: 7px 10px; border-radius: 4px; border: 1px solid transparent;
+  cursor: pointer; transition: all 0.12s; display: flex; align-items: center; gap: 8px;
+}
+.criteria-item:hover { color: var(--text); background: var(--surface2); }
+.criteria-item.active { color: var(--text-bright); background: var(--surface2); border-color: var(--border); }
+.criteria-num { font-size: 0.55rem; color: var(--text-dim); width: 14px; flex-shrink: 0; }
+
+/* ── MAIN PANEL ── */
+.main-panel { overflow-y: auto; }
+
+/* Country hero */
+.country-hero {
+  padding: 40px 48px 32px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  display: grid; grid-template-columns: 1fr auto; gap: 32px; align-items: start;
+}
+.hero-flag { font-size: 3.5rem; line-height: 1; margin-bottom: 12px; }
+.hero-name { font-family: var(--serif); font-size: 2.5rem; color: var(--text-bright); line-height: 1.1; margin-bottom: 6px; }
+.hero-subtitle { font-family: var(--mono); font-size: 0.68rem; color: var(--text-dim); letter-spacing: 0.08em; }
+.hero-context { font-family: var(--sans); font-size: 0.9rem; color: var(--text); line-height: 1.65; margin-top: 16px; max-width: 560px; }
+
+/* Score meter */
+.score-meter { text-align: center; flex-shrink: 0; }
+.score-ring-wrap { position: relative; width: 140px; height: 140px; margin: 0 auto; }
+.score-ring-svg { width: 140px; height: 140px; transform: rotate(-90deg); }
+.score-ring-bg { fill: none; stroke: var(--surface3); stroke-width: 10; }
+.score-ring-fill { fill: none; stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 1s cubic-bezier(.4,0,.2,1), stroke 0.4s; }
+.score-number {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.score-val { font-family: var(--serif); font-size: 2.4rem; color: var(--text-bright); line-height: 1; }
+.score-max { font-family: var(--mono); font-size: 0.6rem; color: var(--text-dim); margin-top: 2px; }
+.score-label { font-family: var(--mono); font-size: 0.65rem; color: var(--text-dim); margin-top: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
+.score-verdict { font-family: var(--mono); font-size: 0.7rem; font-weight: 500; margin-top: 4px; }
+
+/* Criteria panels */
+.criteria-panels { padding: 32px 48px; display: flex; flex-direction: column; gap: 16px; }
+
+.criterion-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; overflow: hidden;
+  transition: border-color 0.2s;
+}
+.criterion-card:hover { border-color: var(--border2); }
+.criterion-card.highlight { border-color: var(--blue); }
+
+.criterion-header {
+  padding: 18px 22px 14px;
+  display: grid; grid-template-columns: auto 1fr auto;
+  gap: 14px; align-items: start; cursor: pointer;
+}
+.criterion-index {
+  font-family: var(--mono); font-size: 0.6rem; color: var(--text-dim);
+  background: var(--surface2); border: 1px solid var(--border);
+  padding: 4px 8px; border-radius: 3px; flex-shrink: 0; margin-top: 2px;
+}
+.criterion-title-wrap {}
+.criterion-title { font-family: var(--sans); font-size: 0.95rem; font-weight: 500; color: var(--text-bright); }
+.criterion-subtitle { font-family: var(--mono); font-size: 0.63rem; color: var(--text-dim); margin-top: 3px; letter-spacing: 0.04em; }
+
+.criterion-score-wrap { text-align: right; flex-shrink: 0; }
+.criterion-score-val { font-family: var(--serif); font-size: 1.6rem; color: var(--text-bright); line-height: 1; }
+.criterion-score-max { font-family: var(--mono); font-size: 0.58rem; color: var(--text-dim); }
+
+.criterion-bar-wrap { padding: 0 22px 6px; }
+.criterion-bar-track {
+  height: 4px; background: var(--surface3); border-radius: 2px; overflow: hidden;
+}
+.criterion-bar-fill {
+  height: 100%; border-radius: 2px;
+  transition: width 0.8s cubic-bezier(.4,0,.2,1), background 0.4s;
+  width: 0;
+}
+
+.criterion-body {
+  padding: 0 22px 20px;
+  display: none;
+}
+.criterion-body.open { display: block; }
+.criterion-body p {
+  font-family: var(--sans); font-size: 0.88rem; line-height: 1.7; color: var(--text);
+  margin-bottom: 12px;
+}
+.criterion-body p:last-child { margin-bottom: 0; }
+.criterion-indicators { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+.indicator {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 5px; padding: 10px 12px;
+}
+.indicator-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+.indicator-text { font-family: var(--sans); font-size: 0.82rem; color: var(--text); line-height: 1.55; }
+.indicator-text strong { color: var(--text-bright); font-weight: 500; }
+
+/* Comparison bar */
+.comparison-section { padding: 0 48px 48px; }
+.section-title {
+  font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--text-dim);
+  padding-bottom: 14px; border-bottom: 1px solid var(--border); margin-bottom: 20px;
+}
+.comparison-grid { display: flex; flex-direction: column; gap: 12px; }
+.comp-row { display: grid; grid-template-columns: 140px 1fr 60px; gap: 14px; align-items: center; }
+.comp-country { font-family: var(--mono); font-size: 0.72rem; color: var(--text); display: flex; align-items: center; gap: 8px; }
+.comp-flag { font-size: 1rem; }
+.comp-bar-track { height: 6px; background: var(--surface3); border-radius: 3px; overflow: hidden; }
+.comp-bar-fill { height: 100%; border-radius: 3px; transition: width 1.1s cubic-bezier(.4,0,.2,1); width: 0; }
+.comp-val { font-family: var(--mono); font-size: 0.7rem; color: var(--text-bright); text-align: right; }
+
+/* Note */
+.sources-note {
+  padding: 20px 48px 32px;
+  font-family: var(--mono); font-size: 0.6rem; color: var(--text-dim);
+  line-height: 1.7; letter-spacing: 0.03em;
+  border-top: 1px solid var(--border);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar { border-right: none; border-bottom: 1px solid var(--border); }
+  .country-hero, .criteria-panels, .comparison-section { padding-left: 24px; padding-right: 24px; }
+  header { padding: 0 20px; }
+  .header-nav { display: none; }
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+.criterion-card { animation: fadeIn 0.3s ease both; }
+.criterion-card:nth-child(1) { animation-delay: 0.05s; }
+.criterion-card:nth-child(2) { animation-delay: 0.1s; }
+.criterion-card:nth-child(3) { animation-delay: 0.15s; }
+.criterion-card:nth-child(4) { animation-delay: 0.2s; }
+.criterion-card:nth-child(5) { animation-delay: 0.25s; }
+.criterion-card:nth-child(6) { animation-delay: 0.3s; }
+.criterion-card:nth-child(7) { animation-delay: 0.35s; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-brand">
+    <div class="brand-icon">P</div>
+    <div class="brand-text">
+      <h1>Poliarquia</h1>
+      <p>Avaliador de Qualidade Democrática</p>
+    </div>
+  </div>
+  <nav class="header-nav">
+    <span class="nav-chip active">Diagnóstico por País</span>
+    <span class="nav-chip">7 Critérios de Dahl</span>
+    <span class="nav-chip">Comparação Internacional</span>
+  </nav>
+  <div class="header-ref">
+    <span class="ref-tag">Dahl, R. — On Democracy, 1998</span>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Selecionar país</div>
+      <div class="country-grid" id="country-grid"></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Escala de avaliação</div>
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--green)"></div>
+          <span class="legend-text">8–10 · Consolidada</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--yellow)"></div>
+          <span class="legend-text">6–7 · Funcional com ressalvas</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--orange)"></div>
+          <span class="legend-text">4–5 · Fragilidades significativas</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--red)"></div>
+          <span class="legend-text">1–3 · Comprometida</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Os 7 critérios de Dahl</div>
+      <div class="criteria-list" id="criteria-nav"></div>
+    </div>
+
+    <div class="sidebar-section" style="border-bottom:none">
+      <div class="sidebar-label">Base teórica</div>
+      <p style="font-family:var(--mono);font-size:0.65rem;color:var(--text-dim);line-height:1.7">
+        Dahl define <em style="color:var(--text)">poliarquia</em> como a aproximação real do ideal democrático. Os 7 critérios mensuram se as instituições necessárias ao autogoverno coletivo estão presentes e funcionando.
+      </p>
+    </div>
+  </aside>
+
+  <!-- MAIN PANEL -->
+  <main class="main-panel" id="main-panel">
+    <!-- rendered by JS -->
+  </main>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  DADOS
+// ══════════════════════════════════════════════
+
+var CRITERIA = [
+  {
+    id: 'eleicoes',
+    title: 'Funcionários eleitos',
+    subtitle: 'Controle das decisões governamentais por eleitos',
+    dahl: 'O controle sobre as decisões governamentais deve ser investido em funcionários eleitos pelos cidadãos.'
+  },
+  {
+    id: 'eleicoes_livres',
+    title: 'Eleições livres e justas',
+    subtitle: 'Periodicidade, lisura e ausência de coerção',
+    dahl: 'Os funcionários eleitos são escolhidos e pacificamente substituídos em eleições frequentes, conduzidas com justiça e sem coerção.'
+  },
+  {
+    id: 'sufragio',
+    title: 'Sufrágio inclusivo',
+    subtitle: 'Direito de voto para todos os adultos',
+    dahl: 'Praticamente todos os adultos têm direito de votar nas eleições para os funcionários governamentais.'
+  },
+  {
+    id: 'candidatura',
+    title: 'Direito de se candidatar',
+    subtitle: 'Acesso aos cargos públicos eletivos',
+    dahl: 'Praticamente todos os adultos têm o direito de concorrer a cargos eletivos, embora limites de idade possam ser estipulados.'
+  },
+  {
+    id: 'expressao',
+    title: 'Liberdade de expressão',
+    subtitle: 'Direito de expressar opiniões sem punição',
+    dahl: 'Os cidadãos têm o direito de se expressar, sem risco de punição severa, sobre assuntos políticos, incluindo críticas aos funcionários, ao governo e ao regime.'
+  },
+  {
+    id: 'informacao',
+    title: 'Fontes alternativas de informação',
+    subtitle: 'Imprensa livre e pluralista',
+    dahl: 'Os cidadãos têm o direito de buscar fontes alternativas de informação. Além disso, existem fontes alternativas de informação que são protegidas por lei.'
+  },
+  {
+    id: 'associacao',
+    title: 'Autonomia associativa',
+    subtitle: 'Direito de formar e integrar organizações',
+    dahl: 'Para obter seus vários direitos, inclusive os listados acima, os cidadãos também têm o direito de formar e participar de organizações políticas relativamente independentes.'
+  }
+];
+
+var PAISES = {
+  brasil: {
+    nome: 'Brasil',
+    flag: '🇧🇷',
+    contexto: 'A democracia brasileira passou por redemocratização em 1985 e consolidação com a Constituição de 1988. Enfrenta desafios persistentes de polarização política, desinformação em larga escala, pressões sobre o STF e tentativas de ruptura institucional — especialmente evidentes nos eventos de janeiro de 2023.',
+    scores: [8, 7, 9, 8, 6, 5, 7],
+    analises: [
+      {
+        score: 8,
+        texto: 'O sistema presidencialista brasileiro funciona com regularidade. O Executivo, Legislativo e Judiciário têm eleições ou indicações com critérios estabelecidos. O problema central é a fragmentação partidária extrema (mais de 20 partidos com cadeiras) que cria o "presidencialismo de coalizão" — o Executivo governa mediante barganhas com o Legislativo, o que enfraquece a accountability.',
+        indicadores: [
+          { nivel: 'ok', texto: '<strong>Eleições presidenciais e parlamentares regulares</strong> — realizadas a cada 4 anos com alternância efetiva de poder.' },
+          { nivel: 'ok', texto: '<strong>Poderes independentes formalmente</strong> — STF, TCU e MP funcionam com autonomia constitucional.' },
+          { nivel: 'warn', texto: '<strong>Presidencialismo de coalizão</strong> — governabilidade depende de negociações com centrão, diluindo mandato popular.' }
+        ]
+      },
+      {
+        score: 7,
+        texto: 'O Brasil possui um sistema eleitoral administrado pelo TSE reconhecidamente eficiente na logística. A urna eletrônica, adotada desde 1996, praticamente eliminou fraudes no ato da votação. O maior problema é o ambiente pré-eleitoral: desinformação massiva em plataformas digitais, uso ilegal de WhatsApp em campanhas e financiamento opaco comprometem a equidade.',
+        indicadores: [
+          { nivel: 'ok', texto: '<strong>Urna eletrônica</strong> — sistema auditável que eliminou fraudes operacionais históricas.' },
+          { nivel: 'ok', texto: '<strong>TSE independente</strong> — administração eleitoral com credibilidade institucional.' },
+          { nivel: 'warn', texto: '<strong>Desinformação sistêmica</strong> — campanhas de fake news via WhatsApp distorcem o ambiente informacional.' },
+          { nivel: 'bad', texto: '<strong>Questionamento infundado das urnas</strong> — narrativas de fraude sem evidências minaramconfiança pós-2018.' }
+        ]
+      },
+      {
+        score: 9,
+        texto: 'O Brasil tem sufrágio universal desde 1988 para maiores de 16 anos (obrigatório dos 18 aos 70). A inclusão formal é alta. Barreiras práticas existem para populações indígenas remotas, populações em situação de rua (sem endereço para título) e presos provisórios (que perdem o direito ao votar, o que é questionável).',
+        indicadores: [
+          { nivel: 'ok', texto: '<strong>Voto a partir dos 16 anos</strong> — um dos sufrágios mais amplos do mundo em termos etários.' },
+          { nivel: 'ok', texto: '<strong>~156 milhões de eleitores</strong> — uma das maiores democracias eleitorais do planeta.' },
+          { nivel: 'warn', texto: '<strong>Barreiras práticas</strong> — populações indígenas remotas e em situação de rua têm dificuldades no cadastramento.' }
+        ]
+      },
+      {
+        score: 8,
+        texto: 'O direito de candidatura é formalmente amplo, mas na prática o sistema partidário cria filtros significativos. Candidatos precisam estar filiados a partido por pelo menos 6 meses e obter aprovação interna. O custo das campanhas, mesmo com financiamento público (fundo eleitoral), favorece candidatos com redes estabelecidas. Cotas de gênero existem mas são frequentemente burladas.',
+        indicadores: [
+          { nivel: 'ok', texto: '<strong>Ausência de restrições ideológicas formais</strong> — qualquer cidadão pode fundar ou filiar-se a partido.' },
+          { nivel: 'warn', texto: '<strong>Cotas de gênero (30%) descumpridas</strong> — partidos lançam candidatas fictícias para cumprir cota sem intenção real.' },
+          { nivel: 'warn', texto: '<strong>Inelegibilidade da Lei da Ficha Limpa</strong> — critério importante mas aplicação nem sempre uniforme.' }
+        ]
+      },
+      {
+        score: 6,
+        texto: 'A Constituição de 1988 garante liberdade de expressão robusta. Na prática, jornalistas investigativos sofrem ameaças, especialmente em regiões periféricas. O ambiente digital amplificou discursos de ódio e ameaças a figuras públicas. Houve episódios preocupantes de inquéritos policiais contra críticos do governo — tanto no governo Bolsonaro (inquérito das fake news) quanto em tensões com o Judiciário.',
+        indicadores: [
+          { nivel: 'ok', texto: '<strong>Garantia constitucional robusta</strong> — CF/88 protege expressão, imprensa e manifestação.' },
+          { nivel: 'warn', texto: '<strong>Ameaças a jornalistas</strong> — Brasil entre os países mais perigosos para comunicadores na América Latina.' },
+          { nivel: 'bad', texto: '<strong>Autocensura crescente</strong> — ambiente de polarização e ameaças digitais inibe cobertura crítica regional.' }
+        ]
+      },
+      {
+        score: 5,
+        texto: 'O Brasil tem imprensa formalmente livre, mas o mercado midiático é altamente concentrado. Seis grupos controlam a maior parte da mídia de massa. A Internet trouxe pluralismo, mas também desinformação industrial — o ecossistema de WhatsApp e Telegram criou câmaras de eco que funcionam como contra-informação organizada contra a mídia convencional.',
+        indicadores: [
+          { nivel: 'warn', texto: '<strong>Alta concentração midiática</strong> — Globo, Record, SBT, Bandeirantes dominam o espectro televisivo.' },
+          { nivel: 'warn', texto: '<strong>Desertos de notícia</strong> — mais de 70% dos municípios brasileiros não têm veículo jornalístico local.' },
+          { nivel: 'bad', texto: '<strong>Ecossistema de desinformação</strong> — redes de grupos pagos no WhatsApp disseminam conteúdo falso sistematicamente.' }
+        ]
+      },
+      {
+        score: 7,
+        texto: 'O Brasil tem tradição de movimentos sociais organizados, sindicatos, ONG e partidos políticos com autonomia real. A sociedade civil é ativa. Tensões ocorrem quando governos tentam desacreditar ou intimidar organizações críticas — o governo Bolsonaro promoveu discurso sistemático contra ONGs ambientais e de direitos humanos, com reflexos no financiamento e na perseguição administrativa.',
+        indicadores: [
+          { nivel: 'ok', texto: '<strong>Sociedade civil diversificada</strong> — MST, sindicatos, OAB, organizações religiosas, movimentos feministas e LGBTQIA+.' },
+          { nivel: 'ok', texto: '<strong>Partidos políticos plurais</strong> — espectro amplo do PSOL ao PL, sem veto ideológico formal.' },
+          { nivel: 'warn', texto: '<strong>Pressão sobre ONGs</strong> — períodos de hostilidade governamental afetaram financiamento e reputação de organizações críticas.' }
+        ]
+      }
+    ]
+  },
+
+  noruega: {
+    nome: 'Noruega',
+    flag: '🇳🇴',
+    contexto: 'A Noruega é consistentemente classificada como uma das democracias mais consolidadas do mundo. Monarquia constitucional parlamentarista com forte Estado de bem-estar, alta confiança nas instituições, imprensa livre e cultura cívica desenvolvida. Referência nos índices Freedom House, V-Dem e EIU.',
+    scores: [10, 10, 10, 10, 10, 9, 10],
+    analises: [
+      { score: 10, texto: 'Sistema parlamentarista com alternância regular de poder. O Storting (parlamento) exerce controle efetivo sobre o Executivo. Governo de maioria ou coalizão sempre sujeito a voto de confiança. Militares completamente subordinados ao poder civil. Burocracia profissional e independente.', indicadores: [
+        { nivel: 'ok', texto: '<strong>Parlamentarismo robusto</strong> — Executivo plenamente responsável perante o legislativo eleito.' },
+        { nivel: 'ok', texto: '<strong>Alternância pacífica</strong> — governo transferido múltiplas vezes entre blocos políticos opostos.' }
+      ]},
+      { score: 10, texto: 'Eleições realizadas com total transparência, financiamento público equitativo e cobertura midiática equilibrada obrigatória. Fraude eleitoral é estatisticamente insignificante. Alta participação eleitoral (77–80%).', indicadores: [
+        { nivel: 'ok', texto: '<strong>Participação acima de 77%</strong> — cultura cívica de alta adesão ao processo eleitoral.' },
+        { nivel: 'ok', texto: '<strong>Financiamento público dominante</strong> — limita influência de dinheiro privado nas campanhas.' }
+      ]},
+      { score: 10, texto: 'Sufrágio universal para todos os cidadãos acima de 18 anos. Sem barreiras práticas ao registro eleitoral — processo automático ou simplificado. Populações migrantes têm voto em eleições locais após 3 anos de residência.', indicadores: [
+        { nivel: 'ok', texto: '<strong>Registro eleitoral automático</strong> — sem burocracia para exercer o direito ao voto.' },
+        { nivel: 'ok', texto: '<strong>Inclusão de residentes estrangeiros</strong> — voto local para imigrantes com residência legal.' }
+      ]},
+      { score: 10, texto: 'Acesso irrestrito a cargos. Sistema de cotas voluntárias nos partidos atingiu paridade de gênero real — o parlamento norueguês tem ~46% de mulheres. Baixo custo de campanha relativo ao financiamento público disponível.', indicadores: [
+        { nivel: 'ok', texto: '<strong>46% de mulheres no parlamento</strong> — paridade de gênero real, não apenas formal.' },
+        { nivel: 'ok', texto: '<strong>Financiamento acessível</strong> — sistema público reduz barreira financeira à candidatura.' }
+      ]},
+      { score: 10, texto: 'Liberdade de expressão ampla com proteção forte. Discurso de ódio tem limites legais claros sem afetar debate político. Clima de confiança permite crítica aberta a governos e instituições sem retaliação.', indicadores: [
+        { nivel: 'ok', texto: '<strong>Proteção jurídica sólida</strong> — processo legal claro para distinguir discurso livre de discurso de ódio.' },
+        { nivel: 'ok', texto: '<strong>Jornalismo investigativo ativo</strong> — casos de corrupção expostos sem represálias.' }
+      ]},
+      { score: 9, texto: 'Imprensa plural e financiada por subsídios públicos que garantem veículos regionais e minoritários. Alta confiança pública nos meios de comunicação. Leve concentração em grandes grupos nórdicos — daí nota 9 em vez de 10.', indicadores: [
+        { nivel: 'ok', texto: '<strong>Subsídio público à imprensa regional</strong> — Estado financia diversidade midiática.' },
+        { nivel: 'warn', texto: '<strong>Concentração moderada</strong> — Schibsted controla parcela relevante do mercado digital norueguês.' }
+      ]},
+      { score: 10, texto: 'Associação livre e ampla. Sindicatos com alta filiação (~50%). Sociedade civil robusta. Nenhuma restrição a partidos políticos por posição ideológica (exceto casos extremos de violência). Modelos de negociação tripartite Estado-capital-trabalho são referência mundial.', indicadores: [
+        { nivel: 'ok', texto: '<strong>Sindicalização de ~50%</strong> — uma das maiores taxas do mundo, garantindo contrapeso ao capital.' },
+        { nivel: 'ok', texto: '<strong>Pluralismo partidário real</strong> — de partidos conservadores a socialistas, todos com acesso igualitário.' }
+      ]}
+    ]
+  },
+
+  hungria: {
+    nome: 'Hungria',
+    flag: '🇭🇺',
+    contexto: 'A Hungria é o caso mais estudado de "retrocesso democrático" (democratic backsliding) dentro da União Europeia. Desde 2010, Viktor Orbán e o Fidesz sistematicamente reescreveram a Constituição, capturaram o judiciário, concentraram a mídia e redesenharam o sistema eleitoral para perpetuar-se no poder — processo denominado "democracia iliberal" pelo próprio Orbán.',
+    scores: [5, 4, 7, 6, 4, 2, 3],
+    analises: [
+      { score: 5, texto: 'Eleições ocorrem, mas o sistema foi redesenhado para garantir vantagem estrutural ao Fidesz. Em 2011, a nova Constituição ("Fundamental Law") reduziu o parlamento, criou novo sistema eleitoral majoritário favorável ao partido dominante e preencheu o Tribunal Constitucional com aliados. Formalmente há eleições — mas a arquitetura institucional foi capturada.', indicadores: [
+        { nivel: 'warn', texto: '<strong>Eleições formalmente regulares</strong> — processo eleitoral ocorre, mas em campo de jogo desnivelado.' },
+        { nivel: 'bad', texto: '<strong>Judiciário capturado</strong> — Tribunal Constitucional, Suprema Corte e Procuradoria controlados por aliados do Fidesz.' },
+        { nivel: 'bad', texto: '<strong>Lei eleitoral modificada</strong> — sistema reescrito para maximizar tradução de votos em cadeiras para o Fidesz.' }
+      ]},
+      { score: 4, texto: 'As eleições ocorrem, mas em condições crescentemente desiguais. O Fidesz controla a maioria dos meios de comunicação, usa recursos públicos em campanhas permanentes, e o financiamento de oposição é dificultado. Em 2022, a oposição se uniu em coalizão e ainda perdeu com ampla margem — analistas atribuem ao ambiente midiático desequilibrado.', indicadores: [
+        { nivel: 'warn', texto: '<strong>Pleitos realizados</strong> — sem violência física ou fraude grosseira na contagem de votos.' },
+        { nivel: 'bad', texto: '<strong>Campo midiático capturado</strong> — 90%+ da mídia controlada por aliados do governo antes das eleições de 2022.' },
+        { nivel: 'bad', texto: '<strong>Gerrymandering</strong> — redesenho de distritos eleitorais favorece sistematicamente o Fidesz.' }
+      ]},
+      { score: 7, texto: 'O sufrágio formal é universal. Sem restrições explícitas ao voto. A nota baixa reflete apenas restrições práticas para húngaros no exterior — processo de registro complicado para diáspora que tende a votar na oposição, enquanto húngaros étnicos em países vizinhos (aliados do Fidesz) têm registro simplificado.', indicadores: [
+        { nivel: 'ok', texto: '<strong>Voto universal formal</strong> — sem restrições por renda, educação ou etnia.' },
+        { nivel: 'warn', texto: '<strong>Assimetria no voto da diáspora</strong> — registro facilitado para húngaros étnicos externos, dificultado para residentes no exterior.' }
+      ]},
+      { score: 6, texto: 'Candidaturas são formalmente livres, mas partidos de oposição enfrentam obstáculos crescentes: dificuldade de acesso a locais para comícios, pressão sobre financiadores privados, e uso do aparato estatal para investigar adversários políticos. Candidatos independentes enfrentam regras de coleta de assinaturas onerosas.', indicadores: [
+        { nivel: 'warn', texto: '<strong>Registro formal aberto</strong> — qualquer cidadão pode tecnicamente candidatar-se.' },
+        { nivel: 'bad', texto: '<strong>Perseguição de financiadores da oposição</strong> — empresários que apoiam partidos rivais sofrem auditorias e contratos cancelados.' }
+      ]},
+      { score: 4, texto: 'A liberdade de expressão existe formalmente, mas o ambiente é de autocensura crescente. Jornalistas são processados por "difamação" quando criticam o governo. A lei de "proteção nacional" de 2023 permite restrições amplas à cobertura de temas "sensíveis". ONGs financiadas do exterior foram rotuladas como agentes estrangeiros.', indicadores: [
+        { nivel: 'warn', texto: '<strong>Sem prisões massivas de jornalistas</strong> — repressão é mais sutil que em ditaduras clássicas.' },
+        { nivel: 'bad', texto: '<strong>Processos por difamação</strong> — usados como instrumento de intimidação contra imprensa crítica.' },
+        { nivel: 'bad', texto: '<strong>Lei de agentes estrangeiros</strong> — ONGs críticas rotuladas e marginalizadas.' }
+      ]},
+      { score: 2, texto: 'Este é o critério mais comprometido. Desde 2010, aliados do Fidesz compraram sistematicamente veículos de comunicação que foram depois "doados" a fundações controladas pelo partido. Em 2018, 500 meios de comunicação foram transferidos para o KESMA, fundo governamental. A oposição tem acesso mínimo ao espectro midiático dominante.', indicadores: [
+        { nivel: 'bad', texto: '<strong>KESMA — 500 veículos concentrados</strong> — maior concentração midiática da UE em mãos de aliados governamentais.' },
+        { nivel: 'bad', texto: '<strong>Único canal público de oposição</strong> — Klub Rádió perdeu licença em 2021 após anos de pressão regulatória.' },
+        { nivel: 'warn', texto: '<strong>Internet relativamente livre</strong> — único espaço de pluralismo real, mas alcance limitado a populações urbanas jovens.' }
+      ]},
+      { score: 3, texto: 'Associações civis foram progressivamente restringidas. A "Lei Soros" de 2017 exigiu que ONGs com financiamento estrangeiro superior a 7,2 milhões de forints se registrassem como "organizações financiadas do exterior" — lei declarada inconstitucional pelo TJUE em 2020, mas substituída por legislação similar em 2021. Sindicatos independentes são pressionados.', indicadores: [
+        { nivel: 'bad', texto: '<strong>Leis contra ONGs</strong> — múltiplas legislações para marginalizar sociedade civil crítica.' },
+        { nivel: 'bad', texto: '<strong>Universidade CEU expulsa</strong> — Central European University forçada a transferir sede para Viena em 2019.' },
+        { nivel: 'warn', texto: '<strong>Partidos de oposição existem</strong> — mas em ecossistema altamente desfavorável.' }
+      ]}
+    ]
+  },
+
+  eua: {
+    nome: 'Estados Unidos',
+    flag: '🇺🇸',
+    contexto: 'Os EUA são a democracia mais antiga do mundo em operação contínua, mas analistas registram deterioração nos índices de qualidade democrática desde 2016. O sistema eleitoral altamente descentralizado, polarização extrema, disfuncionalidade legislativa e os eventos de 6 de janeiro de 2021 colocaram a democracia americana sob escrutínio inédito.',
+    scores: [7, 6, 7, 8, 8, 7, 8],
+    analises: [
+      { score: 7, texto: 'O sistema presidencialista americano tem controles e contrapesos robustos — Congresso, Judiciário Federal e governos estaduais funcionam com real independência. O problema é a disfuncionalidade: polarização extrema cria paralisia legislativa, o Senado pode bloquear indefinidamente via filibuster, e o Colégio Eleitoral pode eleger presidentes com minoria do voto popular.', indicadores: [
+        { nivel: 'ok', texto: '<strong>Separação de poderes real</strong> — Congresso e Judiciário resistiram a pressões antidemocráticas em 2020–2021.' },
+        { nivel: 'warn', texto: '<strong>Colégio Eleitoral</strong> — mecanismo permite eleição presidencial sem maioria do voto popular.' },
+        { nivel: 'bad', texto: '<strong>Filibuster</strong> — minoria senatorial pode bloquear legislação aprovada por maioria.' }
+      ]},
+      { score: 6, texto: 'Eleições altamente descentralizadas — cada estado define suas próprias regras. Isso cria disparidades enormes. Após 2020, vários estados republicanos aprovaram leis restritivas ao voto (voter ID, redução de horários, limitação de urnas em áreas urbanas). O 6 de janeiro de 2021 foi o primeiro ataque violento à transição de poder na história moderna americana.', indicadores: [
+        { nivel: 'warn', texto: '<strong>Descentralização extrema</strong> — 50 sistemas eleitorais diferentes, qualidade muito desigual entre estados.' },
+        { nivel: 'bad', texto: '<strong>Voter suppression</strong> — leis aprovadas em estados republicanos que dificultam voto em populações minoritárias.' },
+        { nivel: 'bad', texto: '<strong>6 de janeiro de 2021</strong> — primeira ruptura violenta na transição de poder na era moderna.' }
+      ]},
+      { score: 7, texto: 'O sufrágio é formalmente universal, mas o registro eleitoral voluntário cria uma barreira significativa — ~30% dos adultos elegíveis não estão registrados. Gerrymandering (redesenho de distritos) distorce representação. A supressão de voto via requisitos de ID e redução de postos eleitorais afeta desproporcionalmente minorias raciais.', indicadores: [
+        { nivel: 'warn', texto: '<strong>Registro voluntário</strong> — diferente de sistemas automáticos, cria barreira que exclui ~30% dos elegíveis.' },
+        { nivel: 'bad', texto: '<strong>Gerrymandering</strong> — redesenho partidário de distritos distorce severamente a representação.' },
+        { nivel: 'bad', texto: '<strong>Supressão racial do voto</strong> — barreiras que afetam desproporcionalmente eleitores negros e latinos.' }
+      ]},
+      { score: 8, texto: 'Formalmente, qualquer cidadão nascido nos EUA pode candidatar-se. Na prática, o custo de campanhas é proibitivo — eleições presidenciais custam bilhões, senatoriais centenas de milhões. A decisão Citizens United (2010) abriu as comportas para dinheiro corporativo ilimitado, criando desigualdade estrutural no acesso.', indicadores: [
+        { nivel: 'ok', texto: '<strong>Sem restrições formais ideológicas</strong> — qualquer cidadão nato pode candidatar-se à presidência.' },
+        { nivel: 'bad', texto: '<strong>Citizens United</strong> — dinheiro ilimitado de corporações e super PACs domina o financiamento eleitoral.' }
+      ]},
+      { score: 8, texto: 'Primeira Emenda oferece das proteções mais robustas ao discurso livre do mundo. Quase nenhuma restrição legal a discurso político, mesmo extremo. O problema é o ambiente: plataformas digitais criam câmaras de eco, ameaças a funcionários eleitos e jornalistas atingiram níveis sem precedentes, com efeito de autocensura.', indicadores: [
+        { nivel: 'ok', texto: '<strong>Primeira Emenda</strong> — proteção ao discurso entre as mais amplas do mundo.' },
+        { nivel: 'warn', texto: '<strong>Ameaças a funcionários e jornalistas</strong> — crescimento documentado de intimidação, especialmente pós-2016.' }
+      ]},
+      { score: 7, texto: 'Mídia formalmente diversa e ativa. O jornalismo investigativo americano continua sendo referência mundial. O problema é a polarização midiática — Fox News e MSNBC operam como braços de mobilização partidária, não como imprensa independente. A desinformação nas redes sociais atingiu escala sem precedente em 2020.', indicadores: [
+        { nivel: 'ok', texto: '<strong>Jornalismo investigativo de qualidade</strong> — NYT, Washington Post, ProPublica mantêm padrão alto.' },
+        { nivel: 'bad', texto: '<strong>Mídia partidária</strong> — Fox News e equivalentes funcionam como operações de comunicação partidária.' }
+      ]},
+      { score: 8, texto: 'Liberdade de associação ampla. Sindicatos historicamente mais fracos que em democracias europeias, mas presentes. Sociedade civil extremamente ativa — de think tanks a movimentos de base. Partidos políticos têm liberdade total, mas o sistema bipartidário estrutural (first-past-the-post) exclui terceiros partidos na prática.', indicadores: [
+        { nivel: 'ok', texto: '<strong>Sociedade civil robusta</strong> — ONGs, think tanks e movimentos sociais operam livremente.' },
+        { nivel: 'warn', texto: '<strong>Bipartidarismo estrutural</strong> — sistema eleitoral majoritário inviabiliza terceiros partidos.' }
+      ]}
+    ]
+  },
+
+  argentina: {
+    nome: 'Argentina',
+    flag: '🇦🇷',
+    contexto: 'A Argentina tem história de instabilidade democrática — 6 golpes militares no século XX, o último em 1976–1983 com graves violações de direitos humanos. A democracia foi restabelecida em 1983 e desde então mantida ininterruptamente. Enfrenta desafios de crise econômica crônica, polarização política intensa e o experimento radical do governo Milei (2023–) com reformas de austeridade extrema.',
+    scores: [7, 8, 9, 8, 7, 6, 7],
+    analises: [
+      { score: 7, texto: 'O sistema presidencialista argentino funciona com eleições regulares e alternância de poder. O Poder Judiciário tem histórico de maior independência que o brasileiro, tendo resistido a pressões de governos kirchneristas. O problema atual é a concentração de poder no Executivo via decretos e o enfraquecimento do Congresso como instância deliberativa.', indicadores: [
+        { nivel: 'ok', texto: '<strong>Alternância real de poder</strong> — Kirchnerismo, Macri, Fernández e Milei representam espectros opostos.' },
+        { nivel: 'warn', texto: '<strong>Governança por decreto</strong> — Milei expandiu uso de DNU (decretos de necessidade e urgência) para contornar Congresso.' }
+      ]},
+      { score: 8, texto: 'A Argentina tem eleições primárias obrigatórias (PASO) que funcionam como pré-seleção pública, mecanismo único na América Latina. O sistema eleitoral é bem administrado e com credibilidade. Problemas existem em nível provincial — eleições locais em algumas províncias são menos transparentes. Desinformação crescente mas sem o nível sistêmico brasileiro.', indicadores: [
+        { nivel: 'ok', texto: '<strong>Sistema PASO</strong> — primárias abertas simultâneas e obrigatórias dão transparência à seleção de candidatos.' },
+        { nivel: 'ok', texto: '<strong>Credibilidade eleitoral</strong> — resultados raramente contestados com evidências sérias.' }
+      ]},
+      { score: 9, texto: 'Sufrágio universal desde 1947 para mulheres, 1912 para homens. Voto obrigatório dos 18 aos 70 anos gera alta participação. O sistema de voto em papel com contagem pública é considerado transparente. Populações indígenas têm acesso formal garantido.', indicadores: [
+        { nivel: 'ok', texto: '<strong>Voto obrigatório com alta participação</strong> — taxa acima de 75% consistentemente.' },
+        { nivel: 'ok', texto: '<strong>Cédula de papel</strong> — sistema auditável com contagem pública.' }
+      ]},
+      { score: 8, texto: 'Candidaturas formalmente livres via PASO. As primárias obrigatórias democratizam o processo de seleção — qualquer grupo com apoio mínimo pode lançar candidatos. Cotas de gênero de 30% implementadas em 1991 (as primeiras da América Latina) contribuíram para maior representação feminina.', indicadores: [
+        { nivel: 'ok', texto: '<strong>PASO democratiza candidaturas</strong> — qualquer força política com apoio mínimo entra na primária.' },
+        { nivel: 'ok', texto: '<strong>Cotas de gênero pioneiras</strong> — lei de cupos desde 1991, hoje com paridade de gênero nas listas.' }
+      ]},
+      { score: 7, texto: 'Liberdade de imprensa razoável, com jornalismo crítico ativo. Problemas incluem pressão via publicidade oficial (o Estado é grande anunciante e pode punir veículos críticos retirando verbas). O governo Milei tem postura hostil à imprensa "mainstream", com declarações agressivas, mas sem ações repressivas diretas até o momento.', indicadores: [
+        { nivel: 'ok', texto: '<strong>Imprensa crítica ativa</strong> — Clarín, La Nación, Infobae e veículos menores fazem jornalismo investigativo.' },
+        { nivel: 'warn', texto: '<strong>Publicidade oficial como pressão</strong> — distribuição opaca de verba publicitária estatal usada historicamente como recompensa/punição.' }
+      ]},
+      { score: 6, texto: 'Pluralismo midiático maior que na Hungria, menor que na Noruega. Alta concentração no grupo Clarín. Rádios comunitárias e veículos digitais independentes existem. Desinformação crescente via redes sociais, especialmente durante crises econômicas, quando narrativas conspiracionistas ganham audiência.', indicadores: [
+        { nivel: 'warn', texto: '<strong>Grupo Clarín dominante</strong> — concentração preocupante no mercado de mídia impressa e televisão.' },
+        { nivel: 'ok', texto: '<strong>Pluralismo digital</strong> — ecossistema de mídia online relativamente diverso.' }
+      ]},
+      { score: 7, texto: 'Sociedade civil argentina é historicamente forte — as Madres de Plaza de Mayo são símbolo global. Sindicatos poderosos (CGT) com histórico de greves gerais. O governo Milei tem postura hostil a sindicatos e movimentos sociais, com retórica que os associa a "corporativismo" e "casta" — mas sem ações repressivas diretas ainda.', indicadores: [
+        { nivel: 'ok', texto: '<strong>Sindicatos com poder real</strong> — CGT é força política capaz de organizar greves gerais nacionais.' },
+        { nivel: 'warn', texto: '<strong>Retórica governamental hostil</strong> — Milei sistematicamente deslegitima movimentos sociais e sindicatos no discurso público.' }
+      ]}
+    ]
+  }
+};
+
+// ══════════════════════════════════════════════
+//  ESTADO
+// ══════════════════════════════════════════════
+var paisAtual = 'brasil';
+var criterioAberto = null;
+
+// ══════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════
+function scoreColor(s) {
+  if (s >= 8) return 'var(--green)';
+  if (s >= 6) return 'var(--yellow)';
+  if (s >= 4) return 'var(--orange)';
+  return 'var(--red)';
+}
+function scoreVerdict(avg) {
+  if (avg >= 8.5) return { label: 'Poliarquia Consolidada', color: 'var(--green)' };
+  if (avg >= 7)   return { label: 'Poliarquia Funcional', color: 'var(--yellow)' };
+  if (avg >= 5)   return { label: 'Poliarquia Fragilizada', color: 'var(--orange)' };
+  return { label: 'Não-Poliarquia', color: 'var(--red)' };
+}
+function nivelColor(n) {
+  if (n === 'ok')   return 'var(--green)';
+  if (n === 'warn') return 'var(--yellow)';
+  return 'var(--red)';
+}
+function avg(arr) { return arr.reduce(function(a,b){return a+b;},0)/arr.length; }
+
+// ══════════════════════════════════════════════
+//  RENDER SIDEBAR COUNTRY GRID
+// ══════════════════════════════════════════════
+function renderCountryGrid() {
+  var grid = document.getElementById('country-grid');
+  grid.innerHTML = Object.keys(PAISES).map(function(key) {
+    var p = PAISES[key];
+    var a = avg(p.scores);
+    var active = key === paisAtual ? 'active' : '';
+    return '<button class="country-btn ' + active + '" onclick="selectPais(\'' + key + '\')">' +
+      '<span class="country-flag">' + p.flag + '</span>' +
+      '<span class="country-name">' + p.nome + '</span>' +
+      '<span class="country-score-mini" style="color:' + scoreColor(a) + '">' + a.toFixed(1) + ' / 10</span>' +
+    '</button>';
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+//  RENDER CRITERIA NAV
+// ══════════════════════════════════════════════
+function renderCriteriaNav() {
+  var nav = document.getElementById('criteria-nav');
+  nav.innerHTML = CRITERIA.map(function(c, i) {
+    return '<div class="criteria-item" onclick="scrollToCriterion(' + i + ')" id="nav-c-' + i + '">' +
+      '<span class="criteria-num">0' + (i+1) + '</span>' + c.title +
+    '</div>';
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+//  RENDER MAIN
+// ══════════════════════════════════════════════
+function renderMain() {
+  var p = PAISES[paisAtual];
+  var scores = p.scores;
+  var media = avg(scores);
+  var verdict = scoreVerdict(media);
+  var circum = 2 * Math.PI * 54;
+  var offset = circum * (1 - media / 10);
+
+  var heroHtml =
+    '<div class="country-hero">' +
+      '<div>' +
+        '<div class="hero-flag">' + p.flag + '</div>' +
+        '<div class="hero-name">' + p.nome + '</div>' +
+        '<div class="hero-subtitle">AVALIAÇÃO DE POLIARQUIA · CRITÉRIOS DAHL · 2024</div>' +
+        '<div class="hero-context">' + p.contexto + '</div>' +
+      '</div>' +
+      '<div class="score-meter">' +
+        '<div class="score-ring-wrap">' +
+          '<svg class="score-ring-svg" viewBox="0 0 120 120">' +
+            '<circle class="score-ring-bg" cx="60" cy="60" r="54"/>' +
+            '<circle class="score-ring-fill" cx="60" cy="60" r="54"' +
+              ' stroke="' + scoreColor(media) + '"' +
+              ' stroke-dasharray="' + circum + '"' +
+              ' stroke-dashoffset="' + circum + '"' +
+              ' id="ring-fill"/>' +
+          '</svg>' +
+          '<div class="score-number">' +
+            '<span class="score-val" id="score-display">–</span>' +
+            '<span class="score-max">/ 10</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="score-label">Média Geral</div>' +
+        '<div class="score-verdict" style="color:' + verdict.color + '">' + verdict.label + '</div>' +
+      '</div>' +
+    '</div>';
+
+  var criteriaHtml = '<div class="criteria-panels">';
+  CRITERIA.forEach(function(c, i) {
+    var s = scores[i];
+    var a = p.analises[i];
+    var pct = (s / 10 * 100);
+    var indHtml = a.indicadores.map(function(ind) {
+      return '<div class="indicator">' +
+        '<div class="indicator-dot" style="background:' + nivelColor(ind.nivel) + '"></div>' +
+        '<div class="indicator-text">' + ind.texto + '</div>' +
+      '</div>';
+    }).join('');
+
+    criteriaHtml +=
+      '<div class="criterion-card" id="criterion-' + i + '">' +
+        '<div class="criterion-header" onclick="toggleCriterion(' + i + ')">' +
+          '<span class="criterion-index">C0' + (i+1) + '</span>' +
+          '<div class="criterion-title-wrap">' +
+            '<div class="criterion-title">' + c.title + '</div>' +
+            '<div class="criterion-subtitle">' + c.subtitle + '</div>' +
+          '</div>' +
+          '<div class="criterion-score-wrap">' +
+            '<span class="criterion-score-val" style="color:' + scoreColor(s) + '">' + s + '</span>' +
+            '<span class="criterion-score-max"> /10</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="criterion-bar-wrap">' +
+          '<div class="criterion-bar-track">' +
+            '<div class="criterion-bar-fill" style="background:' + scoreColor(s) + '" data-pct="' + pct + '" id="bar-' + i + '"></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="criterion-body" id="body-' + i + '">' +
+          '<p>' + a.texto + '</p>' +
+          '<div class="criterion-indicators">' + indHtml + '</div>' +
+          '<p style="margin-top:14px;font-size:0.78rem;color:var(--text-dim);font-style:italic;border-top:1px solid var(--border);padding-top:12px"><strong style="color:var(--text-dim)">Dahl:</strong> "' + c.dahl + '"</p>' +
+        '</div>' +
+      '</div>';
+  });
+  criteriaHtml += '</div>';
+
+  // Comparison
+  var compHtml = '<div class="comparison-section"><div class="section-title">// comparação internacional</div><div class="comparison-grid">';
+  var sorted = Object.keys(PAISES).sort(function(a,b){ return avg(PAISES[b].scores) - avg(PAISES[a].scores); });
+  sorted.forEach(function(key) {
+    var pp = PAISES[key];
+    var a = avg(pp.scores);
+    var isAtual = key === paisAtual;
+    compHtml +=
+      '<div class="comp-row" style="' + (isAtual ? 'opacity:1' : 'opacity:0.65') + '">' +
+        '<div class="comp-country">' +
+          '<span class="comp-flag">' + pp.flag + '</span>' +
+          '<span style="' + (isAtual ? 'color:var(--text-bright);font-weight:500' : '') + '">' + pp.nome + '</span>' +
+        '</div>' +
+        '<div class="comp-bar-track">' +
+          '<div class="comp-bar-fill" style="background:' + scoreColor(a) + '" data-pct="' + (a*10) + '" id="comp-' + key + '"></div>' +
+        '</div>' +
+        '<div class="comp-val" style="color:' + scoreColor(a) + '">' + a.toFixed(1) + '</div>' +
+      '</div>';
+  });
+  compHtml += '</div></div>';
+
+  var noteHtml = '<div class="sources-note">' +
+    'NOTA METODOLÓGICA — As avaliações são baseadas em dados dos índices Freedom House (2024), V-Dem Project (2024), ' +
+    'Economist Intelligence Unit Democracy Index (2023) e análise qualitativa de literatura acadêmica especializada. ' +
+    'Cada critério é pontuado de 1 a 10. A média aritmética constitui o índice geral de poliarquia. ' +
+    'Avaliação de natureza didática — para uso acadêmico e pedagógico.' +
+    '</div>';
+
+  document.getElementById('main-panel').innerHTML = heroHtml + criteriaHtml + compHtml + noteHtml;
+
+  // Animate after render
+  requestAnimationFrame(function() {
+    setTimeout(function() {
+      // Ring animation
+      var ring = document.getElementById('ring-fill');
+      if (ring) {
+        ring.style.strokeDashoffset = circum * (1 - media / 10);
+      }
+      // Score counter
+      var scoreEl = document.getElementById('score-display');
+      if (scoreEl) animateNumber(scoreEl, 0, media, 800);
+      // Bars
+      CRITERIA.forEach(function(_, i) {
+        var bar = document.getElementById('bar-' + i);
+        if (bar) bar.style.width = bar.getAttribute('data-pct') + '%';
+      });
+      // Comp bars
+      Object.keys(PAISES).forEach(function(key) {
+        var bar = document.getElementById('comp-' + key);
+        if (bar) bar.style.width = bar.getAttribute('data-pct') + '%';
+      });
+    }, 60);
+  });
+}
+
+function animateNumber(el, from, to, dur) {
+  var start = null;
+  function step(ts) {
+    if (!start) start = ts;
+    var p = Math.min((ts - start) / dur, 1);
+    var val = from + (to - from) * p;
+    el.textContent = val.toFixed(1);
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+// ══════════════════════════════════════════════
+//  INTERACTIONS
+// ══════════════════════════════════════════════
+window.selectPais = function(key) {
+  paisAtual = key;
+  criterioAberto = null;
+  renderCountryGrid();
+  renderMain();
+};
+
+window.toggleCriterion = function(i) {
+  var body = document.getElementById('body-' + i);
+  var card = document.getElementById('criterion-' + i);
+  if (!body) return;
+  var isOpen = body.classList.contains('open');
+  // close all
+  document.querySelectorAll('.criterion-body').forEach(function(b) { b.classList.remove('open'); });
+  document.querySelectorAll('.criterion-card').forEach(function(c) { c.classList.remove('highlight'); });
+  if (!isOpen) {
+    body.classList.add('open');
+    card.classList.add('highlight');
+    criterioAberto = i;
+  } else {
+    criterioAberto = null;
+  }
+};
+
+window.scrollToCriterion = function(i) {
+  var card = document.getElementById('criterion-' + i);
+  if (card) {
+    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // open it
+    window.toggleCriterion(i);
+  }
+};
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+renderCountryGrid();
+renderCriteriaNav();
+renderMain();
+</script>
+</body>
+</html>
