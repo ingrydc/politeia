@@ -3,6 +3,8 @@
 > *“Politeia”* — do grego: constituição, regime, cidade.  
 > Uma biblioteca pessoal de teoria política, construída para ler, anotar e pensar.
 
+🔗 **[ingrydc.github.io/politeia](https://ingrydc.github.io/politeia)**
+
 -----
 
 ## O que é isso?
