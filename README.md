@@ -1,11 +1,11 @@
 # 🏛️ Politeia
 
-> *“Politeia”* — do grego: constituição, regime, cidade.  
+> *"Politeia"* — do grego: constituição, regime, cidade.  
 > Uma biblioteca pessoal de teoria política, construída para ler, anotar e pensar.
 
 🔗 **[ingrydc.github.io/politeia](https://ingrydc.github.io/politeia)**
 
------
+---
 
 ## O que é isso?
 
@@ -13,27 +13,29 @@
 
 Funciona no navegador, sem instalação, inclusive no iPad.
 
------
+---
 
 ## 📚 Leituras disponíveis
 
-|Módulo                                                   |Autores          |Conceitos centrais                                  |
-|---------------------------------------------------------|-----------------|----------------------------------------------------|
-|[Democracia Procedimental](democracia-procedimental.html)|Schumpeter · Dahl|Método democrático, poliarquia, elites, participação|
-|[Poder, Disciplina, Governamentalidade](foucault.html)   |Michel Foucault  |Micropoder, panóptico, biopoder, sujeito neoliberal |
+| Módulo | Autores | Conceitos centrais |
+|--------|---------|-------------------|
+| [Democracia Procedimental](democracia-procedimental.html) | Schumpeter · Dahl | Método democrático, poliarquia, elites, participação |
+| [Poder, Disciplina, Governamentalidade](foucault.html) | Michel Foucault | Micropoder, panóptico, biopoder, sujeito neoliberal |
+| [Poliarquia na Prática](poliarquia.html) | Robert Dahl — aplicação empírica | Diagnóstico democrático, comparação internacional |
+| [Autoridade, Legitimidade, Burocracia](weber.html) | Max Weber | Dominação, gaiola de ferro, ética da responsabilidade |
 
------
+---
 
 ## ✏️ Como usar os destaques
 
 1. Selecione qualquer trecho de texto com o dedo (ou mouse)
-1. Um menu de cores aparece acima da seleção
-1. Toque na cor desejada — o texto fica marcado
-1. Os destaques ficam salvos na barra lateral
-1. Toque num destaque salvo para voltar ao trecho
-1. Toque no próprio destaque no texto para removê-lo
+2. Um menu de cores aparece acima da seleção
+3. Toque na cor desejada — o texto fica marcado
+4. Os destaques ficam salvos na barra lateral
+5. Toque num destaque salvo para voltar ao trecho
+6. Toque no próprio destaque no texto para removê-lo
 
------
+---
 
 ## 🗂️ Estrutura do repositório
 
@@ -42,9 +44,11 @@ politeia/
 ├── index.html                       ← hub principal
 ├── democracia-procedimental.html    ← Schumpeter & Dahl
 ├── foucault.html                    ← Michel Foucault
+├── poliarquia.html                  ← Dahl aplicado
+├── weber.html                       ← Max Weber
 └── README.md
 ```
 
------
+---
 
 *Teoria política não é abstração — é a gramática do mundo que vivemos.*

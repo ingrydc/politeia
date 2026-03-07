@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weber — Autoridade, Legitimidade, Burocracia</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Cousine:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --bg:        #f2ede4;
+  --bg2:       #ebe4d8;
+  --bg3:       #e0d8c8;
+  --ink:       #1c1710;
+  --ink2:      #2e2618;
+  --ink-dim:   #7a6e5a;
+  --ink-faint: #b0a48e;
+  --steel:     #3a4a5c;
+  --steel2:    #4d6070;
+  --rust:      #8b3a2a;
+  --rust2:     #a84832;
+  --gold:      #7a5c1e;
+  --border:    #c8bea8;
+  --border2:   #b0a48e;
+  --sidebar:   290px;
+  --bask:  'Libre Baskerville', serif;
+  --corm:  'Cormorant Garamond', serif;
+  --cous:  'Cousine', monospace;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--corm);
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  position: relative;
+}
+
+/* grain */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 998;
+}
+
+/* ── SIDEBAR ── */
+#sidebar {
+  width: var(--sidebar);
+  background: var(--ink2);
+  position: fixed; top:0; left:0; height:100vh;
+  overflow-y: auto;
+  display: flex; flex-direction: column;
+  z-index: 200;
+  border-right: 3px solid var(--ink);
+}
+
+#sidebar-logo {
+  padding: 28px 22px 22px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.logo-eyebrow {
+  font-family: var(--cous);
+  font-size: 0.52rem;
+  letter-spacing: 0.3em;
+  color: var(--rust2);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 10px;
+}
+#sidebar-logo h1 {
+  font-family: var(--bask);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #f0ebe0;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+#sidebar-logo p {
+  font-family: var(--corm);
+  font-size: 0.82rem;
+  color: rgba(240,235,224,0.45);
+  margin-top: 6px;
+  font-style: italic;
+  line-height: 1.5;
+}
+.sidebar-rule {
+  height: 1px;
+  background: linear-gradient(90deg, var(--rust2), transparent);
+  margin-top: 18px;
+}
+
+.nav-group { padding: 14px 0 6px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.nav-group-label {
+  font-family: var(--cous);
+  font-size: 0.52rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--rust2);
+  padding: 0 22px 8px;
+  display: block;
+}
+.nav-link {
+  display: block;
+  padding: 7px 22px;
+  font-family: var(--corm);
+  font-size: 0.88rem;
+  color: rgba(240,235,224,0.5);
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: all 0.15s;
+  line-height: 1.4;
+  font-style: italic;
+}
+.nav-link:hover { color: rgba(240,235,224,0.85); background: rgba(255,255,255,0.03); }
+.nav-link.active { color: #f0ebe0; border-left-color: var(--rust2); background: rgba(139,58,42,0.12); font-style: normal; }
+
+/* HL PANEL */
+.hl-panel { padding: 16px 22px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.panel-title {
+  font-family: var(--cous); font-size: 0.52rem; letter-spacing: 0.25em;
+  text-transform: uppercase; color: var(--rust2); margin-bottom: 12px;
+}
+.saved-empty { font-family: var(--cous); font-size: 0.62rem; color: rgba(240,235,224,0.3); font-style: normal; }
+.saved-item {
+  font-family: var(--corm); font-size: 0.8rem; border-radius: 2px;
+  padding: 8px 10px; margin-bottom: 7px; cursor: pointer;
+  color: var(--ink); line-height: 1.5; transition: opacity 0.15s;
+  border-left: 2px solid rgba(0,0,0,0.15);
+}
+.saved-item:hover { opacity: 0.82; }
+.saved-tag { font-family: var(--cous); font-size: 0.52rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.5; margin-bottom: 3px; }
+.clear-btn {
+  font-family: var(--cous); font-size: 0.58rem; letter-spacing: 0.1em;
+  padding: 6px 10px; background: transparent;
+  border: 1px solid rgba(255,255,255,0.1); border-radius: 1px;
+  color: rgba(240,235,224,0.3); cursor: pointer; width: 100%;
+  margin-top: 8px; text-transform: uppercase; transition: all 0.15s;
+}
+.clear-btn:hover { border-color: var(--rust2); color: var(--rust2); }
+
+/* ── MAIN ── */
+#main { margin-left: var(--sidebar); flex:1; min-height: 100vh; }
+
+#progress { position:fixed; top:0; left:var(--sidebar); right:0; height:2px; background:var(--bg3); z-index:300; }
+#progress-fill { height:100%; background: linear-gradient(90deg, var(--rust2), var(--gold)); width:0; transition:width 0.1s; }
+
+#topbar {
+  position: sticky; top:0;
+  background: rgba(242,237,228,0.94);
+  backdrop-filter: blur(10px);
+  border-bottom: 2px solid var(--ink);
+  padding: 9px 52px;
+  display: flex; justify-content: space-between; align-items: center;
+  z-index: 100;
+}
+#topbar-label { font-family: var(--cous); font-size: 0.6rem; color: var(--ink-dim); letter-spacing: 0.08em; text-transform: uppercase; }
+#topbar-hint  { font-family: var(--cous); font-size: 0.58rem; color: var(--ink-faint); letter-spacing: 0.05em; }
+
+#content { max-width: 740px; margin: 0 auto; padding: 56px 52px 100px; }
+
+/* ── CHAPTER STRUCTURE ── */
+.chapter { margin-bottom: 80px; }
+
+.book-header { margin-bottom: 44px; }
+.book-eyebrow {
+  font-family: var(--cous); font-size: 0.58rem;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--rust); margin-bottom: 12px; display: block;
+}
+.book-header h2 {
+  font-family: var(--bask); font-size: 2.2rem; font-weight: 700;
+  color: var(--ink); line-height: 1.2; letter-spacing: -0.02em;
+}
+.book-header h2 em { font-style: italic; color: var(--steel); }
+.book-sub {
+  font-family: var(--corm); font-size: 1rem; color: var(--ink-dim);
+  margin-top: 10px; font-style: italic; line-height: 1.6;
+}
+.book-rule {
+  margin-top: 24px; height: 0;
+  border: none; border-top: 2px solid var(--ink);
+  position: relative;
+}
+.book-rule::after {
+  content: ''; display: block; height: 1px;
+  background: var(--border); margin-top: 3px;
+}
+
+/* chapter heading */
+.ch-header {
+  margin-bottom: 28px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 0;
+}
+.ch-num-wrap {
+  border-right: 2px solid var(--rust);
+  padding-right: 18px; padding-top: 4px;
+}
+.ch-roman {
+  font-family: var(--bask); font-size: 2rem; font-weight: 700;
+  color: var(--rust); line-height: 1; display: block;
+  letter-spacing: -0.03em;
+}
+.ch-num-label { font-family: var(--cous); font-size: 0.45rem; letter-spacing: 0.2em; color: var(--ink-faint); text-transform: uppercase; margin-top: 4px; display: block; }
+.ch-info { padding-left: 20px; }
+.ch-info h3 { font-family: var(--bask); font-size: 1.15rem; font-weight: 700; color: var(--ink); line-height: 1.3; }
+.ch-sub { font-family: var(--corm); font-size: 0.88rem; color: var(--ink-dim); font-style: italic; margin-top: 5px; }
+
+/* body text */
+.text p {
+  font-family: var(--corm); font-size: 1.08rem; line-height: 1.85;
+  color: var(--ink2); margin-bottom: 18px; text-align: justify;
+}
+.text p:last-child { margin-bottom: 0; }
+.text strong { color: var(--ink); font-weight: 600; font-family: var(--bask); font-size: 0.96em; }
+.text em { color: var(--steel); font-style: italic; }
+
+/* box */
+.box {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-left: 3px solid var(--steel);
+  padding: 20px 24px; margin: 28px 0;
+  position: relative;
+}
+.box-label {
+  font-family: var(--cous); font-size: 0.54rem; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--steel2); margin-bottom: 12px;
+}
+.box p, .box li { font-family: var(--corm); font-size: 0.98rem; line-height: 1.75; color: var(--ink2); }
+.box ul { padding-left: 0; list-style: none; }
+.box li { padding-left: 18px; position: relative; margin-bottom: 10px; }
+.box li::before { content: '§'; position: absolute; left: 0; color: var(--steel2); font-family: var(--bask); font-size: 0.85em; }
+.box li strong { font-family: var(--bask); font-size: 0.92em; }
+.box-rust { border-left-color: var(--rust); }
+.box-rust .box-label { color: var(--rust); }
+.box-rust .box li::before { color: var(--rust); }
+.box-gold { border-left-color: var(--gold); }
+.box-gold .box-label { color: var(--gold); }
+.box-gold .box li::before { color: var(--gold); }
+
+blockquote {
+  margin: 28px 0; padding: 22px 28px 22px 24px;
+  border-left: 4px double var(--border2);
+  background: var(--bg2);
+  position: relative;
+}
+blockquote p {
+  font-family: var(--corm); font-size: 1.05rem; font-style: italic;
+  line-height: 1.8; color: var(--ink2); text-align: justify;
+}
+blockquote cite {
+  font-family: var(--cous); font-size: 0.6rem; color: var(--ink-dim);
+  margin-top: 10px; display: block; letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.divider {
+  text-align: center; padding: 20px 0 8px;
+  position: relative;
+}
+.divider::before {
+  content: ''; position: absolute; left:0; right:0; top:50%;
+  height: 1px; background: var(--border);
+}
+.divider span {
+  font-family: var(--cous); font-size: 0.55rem; letter-spacing: 0.35em;
+  color: var(--ink-faint); background: var(--bg); padding: 0 18px;
+  position: relative; text-transform: uppercase;
+}
+
+/* types of domination — special layout */
+.dominacao-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 2px; margin: 28px 0;
+}
+.dom-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  padding: 20px 18px;
+  position: relative; overflow: hidden;
+}
+.dom-card::before {
+  content: ''; position: absolute; top:0; left:0; right:0; height:3px;
+}
+.dom-card.tradicional::before { background: var(--gold); }
+.dom-card.carismatica::before { background: var(--rust); }
+.dom-card.racional::before   { background: var(--steel); }
+.dom-type {
+  font-family: var(--cous); font-size: 0.52rem; letter-spacing: 0.2em;
+  text-transform: uppercase; margin-bottom: 8px;
+}
+.dom-card.tradicional .dom-type { color: var(--gold); }
+.dom-card.carismatica .dom-type { color: var(--rust); }
+.dom-card.racional   .dom-type { color: var(--steel); }
+.dom-title { font-family: var(--bask); font-size: 0.95rem; font-weight: 700; color: var(--ink); margin-bottom: 10px; line-height: 1.3; }
+.dom-body  { font-family: var(--corm); font-size: 0.88rem; line-height: 1.65; color: var(--ink2); }
+.dom-ex    { font-family: var(--cous); font-size: 0.58rem; color: var(--ink-faint); margin-top: 10px; letter-spacing: 0.04em; border-top: 1px solid var(--border); padding-top: 8px; }
+
+/* comparison table */
+.compare-wrap { overflow-x:auto; margin: 28px 0; }
+table { width:100%; border-collapse:collapse; }
+th {
+  font-family: var(--cous); background: var(--ink); color: #f0ebe0;
+  padding: 10px 14px; text-align:left; font-size:0.6rem;
+  letter-spacing: 0.15em; text-transform: uppercase; font-weight: 400;
+}
+td {
+  font-family: var(--corm); padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--ink2); line-height:1.55; font-size: 0.95rem; vertical-align:top;
+}
+tr:nth-child(even) td { background: var(--bg2); }
+
+/* ── FLOATING MENU ── */
+#hl-menu {
+  position: absolute; display: none; z-index: 9999;
+  background: var(--ink2);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 2px;
+  padding: 9px 14px;
+  align-items: center; gap: 10px;
+  box-shadow: 0 6px 28px rgba(0,0,0,0.45);
+  user-select: none; pointer-events: auto;
+}
+#hl-menu::after {
+  content: ''; position: absolute; bottom: -7px; left: 50%;
+  transform: translateX(-50%);
+  border-left: 7px solid transparent; border-right: 7px solid transparent;
+  border-top: 7px solid var(--ink2);
+}
+.hm-label { font-family: var(--cous); font-size: 0.55rem; color: rgba(240,235,224,0.35); white-space: nowrap; letter-spacing: 0.1em; text-transform: uppercase; }
+.hm-cor {
+  width: 22px; height: 22px; border-radius: 2px;
+  border: 1px solid rgba(255,255,255,0.1); cursor: pointer;
+  transition: transform 0.12s, border-color 0.15s; outline: none; flex-shrink: 0;
+}
+.hm-cor:hover { transform: scale(1.18); border-color: rgba(255,255,255,0.5); }
+.hm-fechar {
+  background: none; border: none; color: rgba(240,235,224,0.3);
+  font-size: 0.75rem; cursor: pointer; padding: 2px 4px;
+  font-family: var(--cous); transition: color 0.12s;
+}
+.hm-fechar:hover { color: #f0ebe0; }
+
+/* responsive */
+@media (max-width: 860px) {
+  #sidebar { position: relative; width: 100%; height: auto; }
+  body { flex-direction: column; }
+  #main { margin-left: 0; }
+  #progress { left: 0; }
+  #content, #topbar { padding-left: 24px; padding-right: 24px; }
+  .dominacao-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- FLOATING MENU -->
+<div id="hl-menu">
+  <span class="hm-label">Sublinhar</span>
+  <button class="hm-cor" data-c="y" style="background:#c9a031" title="Âmbar"></button>
+  <button class="hm-cor" data-c="s" style="background:#3a6678" title="Aço"></button>
+  <button class="hm-cor" data-c="r" style="background:#8b3a2a" title="Ferrugem"></button>
+  <button class="hm-cor" data-c="g" style="background:#3a6644" title="Musgo"></button>
+  <button class="hm-fechar" id="hm-fechar">✕</button>
+</div>
+
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <div id="sidebar-logo">
+    <span class="logo-eyebrow">Teoria Política · Clássicos</span>
+    <h1>Max Weber</h1>
+    <p>Autoridade, legitimidade e a gaiola de ferro da modernidade</p>
+    <div class="sidebar-rule"></div>
+  </div>
+
+  <div class="nav-group">
+    <span class="nav-group-label">Política como Vocação</span>
+    <span class="nav-link" data-target="pv-intro">Visão geral</span>
+    <span class="nav-link" data-target="pv-estado">O Estado e a violência</span>
+    <span class="nav-link" data-target="pv-vocacao">Vocação e ética</span>
+    <span class="nav-link" data-target="pv-etica">Ética da convicção vs. responsabilidade</span>
+  </div>
+
+  <div class="nav-group">
+    <span class="nav-group-label">Três Tipos de Dominação</span>
+    <span class="nav-link" data-target="dom-intro">Dominação e legitimidade</span>
+    <span class="nav-link" data-target="dom-tipos">Os três tipos puros</span>
+    <span class="nav-link" data-target="dom-burocracia">Burocracia racional-legal</span>
+  </div>
+
+  <div class="nav-group">
+    <span class="nav-group-label">Ética Protestante</span>
+    <span class="nav-link" data-target="ep-intro">Visão geral</span>
+    <span class="nav-link" data-target="ep-vocacao">Beruf — a vocação religiosa</span>
+    <span class="nav-link" data-target="ep-gaiol">A gaiola de ferro</span>
+  </div>
+
+  <div class="nav-group">
+    <span class="nav-group-label">Síntese</span>
+    <span class="nav-link" data-target="sintese">Os três eixos weberianos</span>
+  </div>
+
+  <div class="hl-panel">
+    <div class="panel-title">Anotações</div>
+    <div id="saved-list"><span class="saved-empty">selecione texto para sublinhar</span></div>
+    <button class="clear-btn" id="clear-btn">limpar todas</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main id="main">
+  <div id="progress"><div id="progress-fill"></div></div>
+  <div id="topbar">
+    <span id="topbar-label">Weber — Autoridade, Legitimidade, Burocracia</span>
+    <span id="topbar-hint">selecione texto para sublinhar</span>
+  </div>
+
+  <div id="content">
+
+    <!-- POLÍTICA COMO VOCAÇÃO INTRO -->
+    <section id="pv-intro" class="chapter">
+      <div class="book-header">
+        <span class="book-eyebrow">Conferência · Munique · 1919</span>
+        <h2>Política como <em>Vocação</em></h2>
+        <div class="book-sub">Conferência proferida em 1919 para estudantes muniquenses — definição do Estado, da política profissional e das éticas do político moderno</div>
+        <div class="book-rule"></div>
+      </div>
+      <div class="text">
+        <p>Max Weber pronunciou esta conferência em janeiro de 1919, poucas semanas após o fim da Primeira Guerra Mundial e em meio à Revolução Alemã. É um texto de circunstância histórica extrema — e por isso mesmo extraordinariamente lúcido sobre o que é a política quando despida de ilusões.</p>
+        <p>Weber não fala para revolucionários entusiastas. Fala para estudantes que romantizam a política, e sua mensagem é áspera: política é o exercício do poder, e poder significa, em última instância, a possibilidade de usar a força. Quem entra na política precisa saber disso — e saber o que fazer com esse fardo.</p>
+        <p>O texto contém três contribuições que moldaram a ciência política até hoje: a <strong>definição do Estado pelo monopólio da violência legítima</strong>, a <strong>análise dos tipos de liderança política</strong> e a <strong>distinção entre ética da convicção e ética da responsabilidade</strong>.</p>
+      </div>
+    </section>
+
+    <!-- O ESTADO E A VIOLÊNCIA -->
+    <section id="pv-estado" class="chapter">
+      <div class="ch-header">
+        <div class="ch-num-wrap">
+          <span class="ch-roman">I</span>
+          <span class="ch-num-label">seção</span>
+        </div>
+        <div class="ch-info">
+          <h3>O Estado e o monopólio da violência</h3>
+          <div class="ch-sub">A definição mais influente de Estado na ciência política moderna</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>Weber oferece a definição de Estado que se tornou referência obrigatória na ciência política: o Estado é a comunidade humana que, dentro de determinado território, <strong>reivindica para si o monopólio do uso legítimo da violência física</strong>. Toda outra organização ou pessoa só pode usar a violência com autorização do Estado.</p>
+        <p>Essa definição é provocadora porque coloca a <em>força física</em> — e não a justiça, o bem comum ou o contrato social — no centro do que é o Estado. Weber não está fazendo um elogio da violência. Está descrevendo sociologicamente o que diferencia o Estado de outras organizações sociais: somente ele pode, legitimamente, matar, prender, cobrar impostos à força.</p>
+      </div>
+      <div class="box box-rust">
+        <div class="box-label">§ A definição weberiana de Estado</div>
+        <ul>
+          <li><strong>Território delimitado:</strong> O Estado exerce poder sobre um espaço geográfico específico — não é universal.</li>
+          <li><strong>Monopólio:</strong> Não há concorrência legítima — milícias, máfias e exércitos privados são ilegais exatamente porque tentam romper esse monopólio.</li>
+          <li><strong>Violência física:</strong> Não apenas coerção simbólica — mas a capacidade real de prender, ferir, matar em nome da ordem.</li>
+          <li><strong>Legitimidade:</strong> A chave. Não é qualquer violência — é a que os dominados reconhecem como válida. Sem legitimidade, é apenas tirania nua.</li>
+        </ul>
+      </div>
+      <div class="text">
+        <p>A palavra-chave é <em>legítima</em>. O que transforma violência em poder estatal é o reconhecimento de sua validade pelos dominados. Isso abre a questão que Weber desenvolve em "Os Três Tipos de Dominação": de onde vem essa legitimidade? Por que as pessoas obedecem?</p>
+      </div>
+      <blockquote>
+        <p>O Estado é aquela comunidade humana que, dentro de determinado território — o conceito de território é essencial à definição — reivindica para si (com êxito) o monopólio da violência física legítima.</p>
+        <cite>— Weber, Política como Vocação, 1919</cite>
+      </blockquote>
+    </section>
+
+    <!-- VOCAÇÃO E POLÍTICA -->
+    <section id="pv-vocacao" class="chapter">
+      <div class="ch-header">
+        <div class="ch-num-wrap">
+          <span class="ch-roman">II</span>
+          <span class="ch-num-label">seção</span>
+        </div>
+        <div class="ch-info">
+          <h3>Viver da política ou para a política</h3>
+          <div class="ch-sub">Os dois tipos de relação que o político mantém com o poder</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>Weber distingue dois tipos de político que podem coexistir na mesma pessoa, mas que representam motivações muito diferentes. Essa distinção é fundamental para entender a profissionalização da política moderna.</p>
+      </div>
+      <div class="box">
+        <div class="box-label">§ Dois modos de ser político</div>
+        <ul>
+          <li><strong>Viver "para" a política:</strong> Faz da política sua causa — uma vocação no sentido mais profundo. Não depende economicamente dela. Pensa a política em termos de missão, valores, transformação. Weber associa isso a figuras carismáticas ou a rentistas que se dedicam à vida pública.</li>
+          <li><strong>Viver "da" política:</strong> Faz da política sua fonte de renda. Não é necessariamente corrupto — é o político profissional moderno. Depende economicamente do cargo, do partido, da máquina. Isso cria incentivos específicos que moldam seu comportamento.</li>
+        </ul>
+      </div>
+      <div class="text">
+        <p>Weber não condena quem vive "da" política — a democracia moderna exige políticos profissionais. Mas aponta o risco: quando a política é apenas carreira, o <em>sine qua non</em> da vocação genuína — a causa pela qual se luta — tende a desaparecer. Resta apenas a manutenção do poder por si mesma.</p>
+        <p>Weber também analisa as qualidades do político autêntico: <strong>paixão</strong> (dedicação a uma causa), <strong>senso de responsabilidade</strong> (por suas ações e consequências) e <strong>senso de proporção</strong> (distância do objeto — não se deixar consumir pela vaidade). A vaidade é, para Weber, o pecado capital do político: querer o poder por si mesmo, não como meio para algo.</p>
+      </div>
+    </section>
+
+    <!-- ÉTICA -->
+    <section id="pv-etica" class="chapter">
+      <div class="ch-header">
+        <div class="ch-num-wrap">
+          <span class="ch-roman">III</span>
+          <span class="ch-num-label">seção</span>
+        </div>
+        <div class="ch-info">
+          <h3>Ética da convicção versus ética da responsabilidade</h3>
+          <div class="ch-sub">A tensão irredutível que define a condição do político moderno</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>Esta é a distinção mais famosa de Weber na conferência — e uma das mais discutidas na filosofia política do século XX. Ela responde à pergunta: como o político deve agir diante do conflito entre seus princípios e as consequências previsíveis de suas ações?</p>
+      </div>
+      <div class="dominacao-grid" style="grid-template-columns: 1fr 1fr; gap: 2px;">
+        <div class="dom-card tradicional">
+          <div class="dom-type">Ética da Convicção</div>
+          <div class="dom-title">Gesinnungsethik</div>
+          <div class="dom-body">Age segundo princípios absolutos, independente das consequências. "Farei o que é certo, e Deus que se encarregue do resultado." A responsabilidade pelas consequências é transferida para Deus, para o adversário, para a história.</div>
+          <div class="dom-ex">Ex: o revolucionário que justifica qualquer violência em nome do ideal puro.</div>
+        </div>
+        <div class="dom-card racional">
+          <div class="dom-type">Ética da Responsabilidade</div>
+          <div class="dom-title">Verantwortungsethik</div>
+          <div class="dom-body">Age considerando as consequências previsíveis de suas ações. Assume responsabilidade pelos efeitos — inclusive pelos não intencionados. Aceita que o uso de meios imorais pode ser necessário para fins morais.</div>
+          <div class="dom-ex">Ex: o estadista que aceita negociar com o adversário para evitar guerra.</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>Weber é claro: a ética da responsabilidade não é cinismo, e a ética da convicção não é ingenuidade necessária. São duas formas genuínas de orientação moral. O problema surge quando a ética da convicção entra na política sem reconhecer a lógica própria do poder — que é sempre a lógica dos meios sujos a serviço de fins.</p>
+        <p>O <strong>político maduro</strong> para Weber é aquele que tem a ética da responsabilidade como guia, mas não abandona a convicção moral. Ele aceita sujar as mãos — sabe que meios violentos ou antiéticos podem ser necessários — mas mantém uma causa que justifica esse fardo. Quando diz "não posso fazer de outro modo", é porque chegou ao ponto onde responsabilidade e convicção convergem.</p>
+      </div>
+      <blockquote>
+        <p>Não é que a ética da convicção seja idêntica à irresponsabilidade, ou que a ética da responsabilidade seja idêntica ao oportunismo sem princípios. Não se trata de nada disso. Trata-se de duas máximas profundamente diferentes e irreconciliavelmente opostas.</p>
+        <cite>— Weber, Política como Vocação, 1919</cite>
+      </blockquote>
+    </section>
+
+    <div class="divider"><span>três tipos de dominação</span></div>
+
+    <!-- DOMINAÇÃO INTRO -->
+    <section id="dom-intro" class="chapter">
+      <div class="book-header">
+        <span class="book-eyebrow">Economia e Sociedade · Cap. III</span>
+        <h2>Os Três Tipos de <em>Dominação</em></h2>
+        <div class="book-sub">Por que as pessoas obedecem? — a tipologia weberiana da autoridade legítima</div>
+        <div class="book-rule"></div>
+      </div>
+      <div class="text">
+        <p>Dominação, para Weber, é a probabilidade de que um comando específico seja obedecido por determinado grupo de pessoas. Mas obediência pura por força não é sustentável — exige recursos demais. Todo poder duradouro precisa de <strong>legitimidade</strong>: os dominados precisam reconhecer o direito de mando do dominante.</p>
+        <p>Weber identifica três <em>tipos ideais</em> de dominação legítima — abstrações analíticas que raramente existem puras na realidade, mas que permitem entender a lógica de qualquer sistema de autoridade. A pergunta central de cada tipo é: <em>por que você obedece?</em></p>
+      </div>
+    </section>
+
+    <!-- OS TRÊS TIPOS -->
+    <section id="dom-tipos" class="chapter">
+      <div class="ch-header">
+        <div class="ch-num-wrap">
+          <span class="ch-roman">IV</span>
+          <span class="ch-num-label">seção</span>
+        </div>
+        <div class="ch-info">
+          <h3>Os três tipos puros</h3>
+          <div class="ch-sub">Tradicional, carismática e racional-legal — as bases da autoridade</div>
+        </div>
+      </div>
+
+      <div class="dominacao-grid">
+        <div class="dom-card tradicional">
+          <div class="dom-type">Tipo I</div>
+          <div class="dom-title">Dominação Tradicional</div>
+          <div class="dom-body">Obedece-se por respeito à tradição imemorial — "sempre foi assim". A autoridade do senhor repousa na santidade dos costumes. O rei é legítimo porque os reis sempre reinaram. Não há separação clara entre público e privado; o governante trata o Estado como patrimônio pessoal.</div>
+          <div class="dom-ex">Monarquias medievais, chefias tribais, patriarcalismo familiar.</div>
+        </div>
+        <div class="dom-card carismatica">
+          <div class="dom-type">Tipo II</div>
+          <div class="dom-title">Dominação Carismática</div>
+          <div class="dom-body">Obedece-se por devoção às qualidades excepcionais de um indivíduo — sua heroicidade, santidade ou dom profético. O carisma é revolucionário: rompe com a tradição e com as regras estabelecidas. Mas é intrinsecamente instável — depende do líder vivo e de vitórias contínuas.</div>
+          <div class="dom-ex">Profetas religiosos, líderes revolucionários, populistas carismáticos.</div>
+        </div>
+        <div class="dom-card racional">
+          <div class="dom-type">Tipo III</div>
+          <div class="dom-title">Dominação Racional-Legal</div>
+          <div class="dom-body">Obedece-se às normas impessoais — não à pessoa, mas ao cargo. A autoridade é derivada de regras formais estabelecidas racionalmente. O funcionário obedece ao regulamento, não ao chefe como indivíduo. É o tipo dominante na modernidade — base do Estado e das organizações contemporâneas.</div>
+          <div class="dom-ex">Burocracia estatal, empresas, tribunais, universidades modernas.</div>
+        </div>
+      </div>
+
+      <div class="text">
+        <p>Os três tipos raramente existem puros. Hitler começou como líder carismático, mas construiu um aparato burocrático racional. As monarquias constitucionais combinam legitimidade tradicional com estrutura racional-legal. O capitalismo moderno usa dominação racional-legal mas líderes empresariais cultivam carisma.</p>
+        <p>O <strong>problema da sucessão</strong> é o ponto fraco de cada tipo: a tradição se mantém pelo costume, mas entra em crise quando a mudança social acelera. O carisma dura enquanto o líder vive — e depois precisa ser "cotidianizado" em tradição ou burocracia. A burocracia se perpetua, mas pode enrijecer e perder a capacidade de adaptação.</p>
+      </div>
+    </section>
+
+    <!-- BUROCRACIA -->
+    <section id="dom-burocracia" class="chapter">
+      <div class="ch-header">
+        <div class="ch-num-wrap">
+          <span class="ch-roman">V</span>
+          <span class="ch-num-label">seção</span>
+        </div>
+        <div class="ch-info">
+          <h3>A burocracia racional-legal</h3>
+          <div class="ch-sub">O tipo mais eficiente de dominação — e o mais perigoso</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>A burocracia moderna é, para Weber, a forma mais eficiente de organização já criada pela humanidade. É também aquela que mais ameaça a liberdade humana. Essa tensão está no coração da análise weberiana da modernidade.</p>
+      </div>
+      <div class="box box-gold">
+        <div class="box-label">§ Características da burocracia ideal</div>
+        <ul>
+          <li><strong>Hierarquia de cargos:</strong> Cada cargo tem competências definidas e supervisão clara. Ninguém age sem autorização — e toda ação pode ser rastreada.</li>
+          <li><strong>Regras escritas:</strong> Procedimentos documentados que garantem previsibilidade e uniformidade. O funcionário não decide por capricho — aplica normas.</li>
+          <li><strong>Separação entre cargo e pessoa:</strong> O funcionário não é dono do cargo, nem do escritório, nem dos recursos. O cargo existe independentemente de quem o ocupa.</li>
+          <li><strong>Competência técnica:</strong> Seleção por qualificação, não por favores ou nascimento. Meritocracia formal como princípio de recrutamento.</li>
+          <li><strong>Impessoalidade:</strong> As decisões aplicam normas gerais a casos individuais — sem preferências pessoais, amizades ou inimizades.</li>
+          <li><strong>Remuneração regular:</strong> O funcionário recebe salário — não vive de saques, comissões sobre o cargo ou propinas. Isso reduz a corrupção estrutural.</li>
+        </ul>
+      </div>
+      <div class="text">
+        <p>A burocracia é tecnicamente superior a qualquer forma anterior de organização pela mesma razão que a máquina a vapor é superior ao trabalho braçal: <strong>precisão, velocidade, univocidade, subordinação, redução de atritos</strong>. Uma vez estabelecida, é praticamente impossível destruí-la — porque todos os que dependem dela têm interesse em sua continuidade.</p>
+        <p>Mas Weber vê com terror a consequência dessa eficiência: a <strong>gaiola de ferro</strong>. A racionalização progressiva de todas as esferas da vida — trabalho, direito, ciência, política — pode criar uma ordem tão totalizante que não haja espaço para a liberdade, o carisma, a criatividade. O "último homem" de Nietzsche reaparece em Weber como o funcionário perfeito: eficiente, previsível, sem alma.</p>
+      </div>
+      <blockquote>
+        <p>A burocracia desenvolvida é, sob todos os pontos de vista, a mais difícil de destruir. A burocracia é o meio de transformar a "ação comunitária" em "ação societária" racionalmente ordenada. Como instrumento de societalização das relações de poder, a burocracia foi e é um instrumento de poder de primeira ordem.</p>
+        <cite>— Weber, Economia e Sociedade</cite>
+      </blockquote>
+    </section>
+
+    <div class="divider"><span>ética protestante</span></div>
+
+    <!-- ÉTICA PROTESTANTE INTRO -->
+    <section id="ep-intro" class="chapter">
+      <div class="book-header">
+        <span class="book-eyebrow">A Ética Protestante e o Espírito do Capitalismo · 1904–05</span>
+        <h2>A Ética <em>Protestante</em></h2>
+        <div class="book-sub">Como a teologia calvinista produziu, involuntariamente, o espírito do capitalismo moderno</div>
+        <div class="book-rule"></div>
+      </div>
+      <div class="text">
+        <p>Este é o livro mais famoso de Weber — e o mais frequentemente mal interpretado. Weber <em>não</em> está dizendo que o protestantismo causou o capitalismo, nem que a religião explica a economia. Está fazendo uma análise mais sutil: a ética religiosa protestante — especialmente o calvinismo e o puritanismo — criou um <em>ethos</em>, uma forma de encarar o mundo e o trabalho, que foi funcionalmente compatível com o desenvolvimento do capitalismo moderno.</p>
+        <p>O argumento parte de uma observação empírica dos dados de sua época: nas regiões de confissão protestante, especialmente calvinista, havia maior desenvolvimento capitalista do que nas regiões católicas. Por quê? A resposta está no conceito de <em>Beruf</em> — vocação.</p>
+      </div>
+    </section>
+
+    <!-- BERUF -->
+    <section id="ep-vocacao" class="chapter">
+      <div class="ch-header">
+        <div class="ch-num-wrap">
+          <span class="ch-roman">VI</span>
+          <span class="ch-num-label">seção</span>
+        </div>
+        <div class="ch-info">
+          <h3>Beruf — a vocação como chamado divino</h3>
+          <div class="ch-sub">Como Lutero e Calvino transformaram o trabalho mundano em dever religioso</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>A palavra alemã <em>Beruf</em> significa tanto "profissão" quanto "vocação" — e essa ambiguidade é o centro do argumento de Weber. Lutero introduziu a ideia de que cada ocupação mundana — artesão, camponês, comerciante — é um chamado de Deus tão sagrado quanto o do monge ou padre.</p>
+        <p>Isso foi revolucionário. Na tradição medieval católica, a vida contemplativa e religiosa era moralmente superior ao trabalho mundano. Com Lutero, o trabalho no mundo <em>tornou-se</em> o lugar privilegiado do cumprimento do dever religioso. Não é preciso ir ao mosteiro para servir a Deus — basta fazer bem o próprio trabalho no mundo.</p>
+      </div>
+      <div class="box">
+        <div class="box-label">§ A lógica calvinista da predestinação</div>
+        <ul>
+          <li><strong>Predestinação:</strong> Calvino ensinou que Deus predestinou, desde a eternidade, quem seria salvo e quem condenado — e nada que o homem faça pode mudar isso. Uma doutrina de terror psicológico absoluto.</li>
+          <li><strong>Ansiedade da graça:</strong> O fiel não pode saber se é um dos eleitos. Vive em angústia existencial permanente. Como suportar essa incerteza?</li>
+          <li><strong>O trabalho como sinal:</strong> O êxito mundano — riqueza, prosperidade, disciplina — começa a ser interpretado como sinal (não garantia) de que se é um eleito de Deus. O fracasso econômico, sinal de condenação.</li>
+          <li><strong>A consequência prática:</strong> O puritano trabalha com disciplina obsessiva, poupa em vez de consumir, reinveste o lucro — não para desfrutar a riqueza, mas para provar a si mesmo que é um eleito. O capitalismo nasce como subproduto de uma ansiedade religiosa.</li>
+        </ul>
+      </div>
+      <div class="text">
+        <p>O resultado paradoxal: uma doutrina religiosa que não tinha nenhuma intenção econômica produziu, involuntariamente, uma <em>ética do trabalho</em> que foi a base psicológica do capitalismo moderno. A acumulação não como fim em si, mas como prova de graça. O lucro não como pecado, mas como indicador de eleição divina.</p>
+      </div>
+      <blockquote>
+        <p>O ganho de dinheiro dentro da ordem econômica moderna é, quando legalmente obtido, o resultado e a expressão da virtude e da eficiência no desempenho de uma vocação. E essa virtude e eficiência constituem, como é fácil ver, o verdadeiro alfa e ômega da ética de Franklin.</p>
+        <cite>— Weber, A Ética Protestante e o Espírito do Capitalismo</cite>
+      </blockquote>
+    </section>
+
+    <!-- GAIOLA DE FERRO -->
+    <section id="ep-gaiol" class="chapter">
+      <div class="ch-header">
+        <div class="ch-num-wrap">
+          <span class="ch-roman">VII</span>
+          <span class="ch-num-label">seção</span>
+        </div>
+        <div class="ch-info">
+          <h3>A gaiola de ferro</h3>
+          <div class="ch-sub">O diagnóstico mais sombrio da modernidade capitalista</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>No último parágrafo de A Ética Protestante, Weber formula seu diagnóstico mais perturbador da modernidade. O capitalismo começou com uma base religiosa — a ascese puritana, a disciplina do trabalho como serviço a Deus. Mas quando o capitalismo se tornou sistema global, quando a riqueza criou suas próprias estruturas de manutenção, a base religiosa tornou-se desnecessária.</p>
+        <p>O que fica após o "espírito" ter sido esvaziado? A <strong>gaiola de ferro</strong> (<em>stahlhartes Gehäuse</em> — literalmente "invólucro duro como aço"): o capitalismo como sistema que se autossustenta por sua própria lógica, independente de qualquer motivação ética ou religiosa. Trabalhamos não por dever a Deus, não por vocação, mas porque a estrutura econômica exige. Somos prisioneiros de uma ordem que construímos mas que agora nos governa.</p>
+      </div>
+      <div class="box box-rust">
+        <div class="box-label">§ A racionalização e seus custos</div>
+        <ul>
+          <li><strong>Desencantamento do mundo:</strong> A ciência e a racionalização eliminam o mistério, a magia, o sagrado. O mundo explicado tecnicamente perde sentido último — nenhuma ciência pode responder "para quê vivemos?".</li>
+          <li><strong>Especialização sem sentido:</strong> O especialista moderno — médico, engenheiro, economista — domina perfeitamente sua parcela mínima do saber, mas não compreende o todo. "Especialistas sem espírito, sensualistas sem coração."</li>
+          <li><strong>Burocracia como destino:</strong> A racionalização organizacional produz funcionários perfeitamente eficientes mas destituídos de julgamento próprio. A responsabilidade se dilui nas regras — ninguém decide, as normas decidem.</li>
+          <li><strong>Politeísmo de valores:</strong> Sem fundamento religioso compartilhado, os valores modernos estão em guerra permanente — ciência, arte, política, amor têm lógicas irreconciliáveis. Não há árbitro que decida qual deus seguir.</li>
+        </ul>
+      </div>
+      <blockquote>
+        <p>Ninguém sabe ainda quem viverá no futuro nessa gaiola, e se ao término desse tremendo desenvolvimento surgirão profetas inteiramente novos, ou um vigoroso renascimento de velhos pensamentos e ideais, ou ainda — se nenhuma das duas — uma petrificação mecanizada, ornamentada com uma espécie de autossuficiência convulsiva.</p>
+        <cite>— Weber, A Ética Protestante e o Espírito do Capitalismo</cite>
+      </blockquote>
+    </section>
+
+    <div class="divider"><span>síntese</span></div>
+
+    <!-- SÍNTESE -->
+    <section id="sintese" class="chapter">
+      <div class="book-header">
+        <span class="book-eyebrow">Articulação dos conceitos</span>
+        <h2>Os três eixos <em>weberianos</em></h2>
+        <div class="book-sub">Como política, dominação e racionalização formam uma arquitetura coerente</div>
+        <div class="book-rule"></div>
+      </div>
+      <div class="text">
+        <p>Os três textos de Weber que estudamos não são obras isoladas — são três janelas para o mesmo diagnóstico: a modernidade é um processo de <strong>racionalização crescente</strong> que ao mesmo tempo aumenta o poder e a eficiência humana e ameaça esvaziar de sentido a existência individual e coletiva.</p>
+      </div>
+      <div class="compare-wrap">
+        <table>
+          <tr><th>Dimensão</th><th>Política como Vocação</th><th>Tipos de Dominação</th><th>Ética Protestante</th></tr>
+          <tr><td><strong>Objeto central</strong></td><td>O político e o Estado</td><td>Autoridade e obediência</td><td>Capitalismo e religião</td></tr>
+          <tr><td><strong>Conceito-chave</strong></td><td>Monopólio da violência legítima</td><td>Tipos ideais de dominação</td><td>Beruf / Gaiola de ferro</td></tr>
+          <tr><td><strong>Tensão central</strong></td><td>Convicção vs. responsabilidade</td><td>Carisma vs. rotinização</td><td>Sentido religioso vs. mecanismo impessoal</td></tr>
+          <tr><td><strong>Tom</strong></td><td>Austero, realista</td><td>Analítico, tipológico</td><td>Histórico, pessimista</td></tr>
+          <tr><td><strong>Legado</strong></td><td>Definição de Estado</td><td>Teoria da burocracia</td><td>Sociologia da religião e economia</td></tr>
+        </table>
+      </div>
+      <div class="text">
+        <p><strong>O fio condutor:</strong> Weber está sempre perguntando como as ações humanas produzem consequências não intencionadas que escapam ao controle dos atores. Os puritanos não queriam criar o capitalismo — criaram. Os revolucionários carismáticos não querem criar burocracias — criam. O político que governa por convicção não quer produzir catástrofe — pode produzir.</p>
+        <p><strong>O que Weber nos ensina hoje:</strong> A burocracia não é um defeito a ser corrigido — é a forma normal de organização do poder moderno, com suas virtudes (previsibilidade, equidade formal) e seus vícios (rigidez, irresponsabilidade difusa). O carisma político não é necessariamente democrático — pode ser a forma mais eficaz de destruir instituições democráticas. E a racionalização técnica não resolve a questão do sentido — que permanece aberta, pessoal, irredutível.</p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<script>
+(function() {
+  'use strict';
+
+  // ── PROGRESSO ──
+  window.addEventListener('scroll', function() {
+    var d = document.documentElement;
+    var s = d.scrollTop || document.body.scrollTop;
+    var h = d.scrollHeight - d.clientHeight;
+    document.getElementById('progress-fill').style.width = (h > 0 ? (s/h*100) : 0) + '%';
+    marcarNavAtiva();
+  });
+
+  // ── NAVEGAÇÃO ──
+  document.querySelectorAll('.nav-link').forEach(function(el) {
+    el.addEventListener('click', function() {
+      var alvo = document.getElementById(this.getAttribute('data-target'));
+      if (alvo) alvo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  function marcarNavAtiva() {
+    var secoes = document.querySelectorAll('.chapter');
+    var ativaId = null;
+    secoes.forEach(function(s) {
+      if (s.getBoundingClientRect().top < 120) ativaId = s.id;
+    });
+    document.querySelectorAll('.nav-link').forEach(function(l) {
+      l.classList.toggle('active', l.getAttribute('data-target') === ativaId);
+    });
+  }
+
+  // ── HIGHLIGHT ──
+  var CORES = { y: '#c9a031', s: '#3a6678', r: '#8b3a2a', g: '#3a6644' };
+  var CORES_TEXT = { y: '#1c1710', s: '#f0ebe0', r: '#f0ebe0', g: '#f0ebe0' };
+  var destaques = [];
+  var proxId = 1;
+  var rangeAtual = null;
+
+  var menu = document.getElementById('hl-menu');
+
+  function fecharMenu() { menu.style.display = 'none'; rangeAtual = null; }
+
+  menu.addEventListener('mousedown', function(e) { e.preventDefault(); });
+  menu.addEventListener('touchstart', function(e) { e.stopPropagation(); }, { passive: true });
+
+  document.getElementById('hm-fechar').addEventListener('click', function() {
+    fecharMenu(); window.getSelection().removeAllRanges();
+  });
+
+  menu.querySelectorAll('.hm-cor').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var cor = this.getAttribute('data-c');
+      if (rangeAtual) aplicarHighlight(rangeAtual, cor);
+      fecharMenu(); window.getSelection().removeAllRanges();
+    });
+    btn.addEventListener('touchend', function(e) {
+      e.preventDefault(); e.stopPropagation();
+      var cor = this.getAttribute('data-c');
+      if (rangeAtual) aplicarHighlight(rangeAtual, cor);
+      fecharMenu(); window.getSelection().removeAllRanges();
+    });
+  });
+
+  function mostrarMenu(e) {
+    var isToque = e && e.type === 'touchend';
+    setTimeout(function() {
+      var sel = window.getSelection();
+      if (!sel || sel.isCollapsed || sel.rangeCount === 0) return;
+      if (sel.toString().trim().length < 1) return;
+      var range = sel.getRangeAt(0);
+      rangeAtual = range.cloneRange();
+      var rect = range.getBoundingClientRect();
+      var scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+      var scrollY = window.pageYOffset || document.documentElement.scrollTop;
+      menu.style.left = Math.max(8, rect.left + scrollX + rect.width/2 - 120) + 'px';
+      menu.style.top  = Math.max(8, rect.top  + scrollY - 56) + 'px';
+      menu.style.display = 'flex';
+    }, isToque ? 100 : 20);
+  }
+
+  document.getElementById('content').addEventListener('mouseup', mostrarMenu);
+  document.getElementById('content').addEventListener('touchend', mostrarMenu);
+
+  document.addEventListener('mousedown', function(e) {
+    if (!menu.contains(e.target)) fecharMenu();
+  });
+  document.addEventListener('touchstart', function(e) {
+    if (!menu.contains(e.target)) setTimeout(function() { fecharMenu(); }, 50);
+  }, { passive: true });
+
+  function aplicarHighlight(range, cor) {
+    var id = proxId++;
+    var anc = range.commonAncestorContainer;
+    var el = anc.nodeType === 3 ? anc.parentElement : anc;
+    var sec = el ? el.closest('.chapter') : null;
+    var secNome = 'Geral';
+    if (sec) { var h = sec.querySelector('h3,h2'); if (h) secNome = h.textContent.trim().slice(0,40); }
+    var texto = range.toString().trim();
+    var spans = [];
+    coletarNosTexto(range).forEach(function(no) {
+      var ini = no === range.startContainer ? range.startOffset : 0;
+      var fim = no === range.endContainer   ? range.endOffset   : no.length;
+      if (ini >= fim) return;
+      var span = document.createElement('span');
+      span.style.cssText = 'background:' + CORES[cor] + ';color:' + (CORES_TEXT[cor]||'#1c1710') + ';border-radius:1px;cursor:pointer;padding:0 1px;';
+      span.dataset.hid = id;
+      span.title = 'Clique para remover';
+      span.textContent = no.nodeValue.slice(ini, fim);
+      span.addEventListener('click', function(e) { e.stopPropagation(); removerHighlight(id); });
+      var frag = document.createDocumentFragment();
+      var a = no.nodeValue.slice(0, ini), d = no.nodeValue.slice(fim);
+      if (a) frag.appendChild(document.createTextNode(a));
+      frag.appendChild(span);
+      if (d) frag.appendChild(document.createTextNode(d));
+      no.parentNode.replaceChild(frag, no);
+      spans.push(span);
+    });
+    if (!spans.length) return;
+    destaques.push({ id:id, texto:texto.slice(0,80), cor:cor, sec:secNome, spans:spans });
+    renderizarLista();
+  }
+
+  function coletarNosTexto(range) {
+    var anc = range.commonAncestorContainer;
+    if (anc.nodeType === 3) return [anc];
+    var nos = [], walker = document.createTreeWalker(anc, NodeFilter.SHOW_TEXT, null, false), n;
+    while ((n = walker.nextNode())) { try { if (range.intersectsNode(n)) nos.push(n); } catch(e){} }
+    return nos;
+  }
+
+  function removerHighlight(id) {
+    var idx = destaques.findIndex(function(h) { return h.id === id; });
+    if (idx === -1) return;
+    destaques[idx].spans.forEach(function(sp) {
+      if (!sp.parentNode) return;
+      var pai = sp.parentNode;
+      while (sp.firstChild) pai.insertBefore(sp.firstChild, sp);
+      pai.removeChild(sp);
+      try { pai.normalize(); } catch(e) {}
+    });
+    destaques.splice(idx, 1);
+    renderizarLista();
+  }
+
+  function renderizarLista() {
+    var lista = document.getElementById('saved-list');
+    if (!destaques.length) { lista.innerHTML = '<span class="saved-empty">selecione texto para sublinhar</span>'; return; }
+    lista.innerHTML = destaques.map(function(h) {
+      return '<div class="saved-item" style="background:' + CORES[h.cor] + ';color:' + (CORES_TEXT[h.cor]||'#1c1710') + '" onclick="__irPara(' + h.id + ')">' +
+        '<div class="saved-tag">' + h.sec + '</div>\u201c' + h.texto + (h.texto.length>=80?'\u2026':'') + '\u201d</div>';
+    }).join('');
+  }
+
+  window.__irPara = function(id) {
+    var hl = destaques.find(function(h) { return h.id === id; });
+    if (!hl || !hl.spans[0]) return;
+    hl.spans[0].scrollIntoView({ behavior:'smooth', block:'center' });
+    hl.spans.forEach(function(s) {
+      s.style.outline = '2px solid ' + CORES[hl.cor];
+      s.style.outlineOffset = '2px';
+      setTimeout(function() { s.style.outline=''; s.style.outlineOffset=''; }, 1600);
+    });
+  };
+
+  document.getElementById('clear-btn').addEventListener('click', function() {
+    destaques.map(function(h){return h.id;}).forEach(function(id){try{removerHighlight(id);}catch(e){}});
+  });
+
+  marcarNavAtiva();
+})();
+</script>
+</body>
+</html>
