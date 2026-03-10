@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foucault — Instituições Modernas e Poder Disciplinar</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Syne+Mono&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --bg:      #0f0f11;
+  --bg2:     #151518;
+  --bg3:     #1c1c21;
+  --bg4:     #222228;
+  --border:  #2a2a32;
+  --border2: #363640;
+  --text:    #b8b9c8;
+  --text2:   #d4d5e0;
+  --bright:  #eeeef5;
+  --dim:     #4a4a5a;
+  --sidebar: 300px;
+
+  --escola:  #4a8fa8;
+  --hospital:#7a5fa8;
+  --prisao:  #a85f4a;
+  --ensaio:  #6a9a6a;
+
+  --syne:    'Syne', sans-serif;
+  --mono:    'Syne Mono', monospace;
+  --serif:   'Source Serif 4', serif;
+}
+
+html { scroll-behavior: smooth; }
+body { font-family: var(--serif); background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+
+/* grain */
+body::after {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:999;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+/* ── SIDEBAR ── */
+#sidebar {
+  width: var(--sidebar); position: fixed; top:0; left:0; height:100vh;
+  background: var(--bg2); border-right: 1px solid var(--border);
+  overflow-y: auto; z-index: 200; display: flex; flex-direction: column;
+}
+
+.sb-top { padding: 28px 24px 20px; border-bottom: 1px solid var(--border); }
+.sb-eyebrow { font-family: var(--mono); font-size: 0.52rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--prisao); margin-bottom: 10px; display: block; }
+.sb-title { font-family: var(--syne); font-size: 1.15rem; font-weight: 800; color: var(--bright); line-height: 1.2; }
+.sb-sub { font-family: var(--serif); font-size: 0.82rem; color: var(--dim); margin-top: 6px; font-style: italic; line-height: 1.5; }
+
+.nav-section { border-bottom: 1px solid var(--border); padding: 14px 0 8px; }
+.nav-section-label {
+  font-family: var(--mono); font-size: 0.5rem; letter-spacing: 0.25em;
+  text-transform: uppercase; padding: 0 24px 8px; display: block;
+}
+.nav-link {
+  display: block; padding: 7px 24px;
+  font-family: var(--serif); font-size: 0.85rem; color: var(--dim);
+  cursor: pointer; border-left: 2px solid transparent;
+  transition: all 0.15s; line-height: 1.4; font-style: italic;
+}
+.nav-link:hover { color: var(--text2); background: rgba(255,255,255,0.02); }
+.nav-link.active { font-style: normal; border-left-color: currentColor; background: rgba(255,255,255,0.03); }
+.nav-link.escola  { color: var(--escola);  } .nav-link.escola.active  { color: var(--escola); }
+.nav-link.hospital{ color: var(--hospital);} .nav-link.hospital.active{ color: var(--hospital); }
+.nav-link.prisao  { color: var(--prisao);  } .nav-link.prisao.active  { color: var(--prisao); }
+.nav-link.ensaio  { color: var(--ensaio);  } .nav-link.ensaio.active  { color: var(--ensaio); }
+.nav-link.white   { color: var(--text2); }   .nav-link.white.active   { color: var(--bright); }
+
+/* HL PANEL */
+.hl-panel { padding: 16px 24px; border-bottom: 1px solid var(--border); }
+.hl-label { font-family: var(--mono); font-size: 0.5rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--dim); margin-bottom: 10px; display: block; }
+.saved-empty { font-family: var(--mono); font-size: 0.6rem; color: var(--dim); font-style: normal; }
+.saved-item {
+  font-family: var(--serif); font-size: 0.8rem; border-radius: 3px;
+  padding: 8px 10px; margin-bottom: 6px; cursor: pointer;
+  line-height: 1.5; transition: opacity 0.15s; border-left: 2px solid rgba(255,255,255,0.15);
+}
+.saved-item:hover { opacity: 0.75; }
+.saved-tag { font-family: var(--mono); font-size: 0.5rem; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.55; margin-bottom: 3px; }
+.clear-btn {
+  font-family: var(--mono); font-size: 0.55rem; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 6px 10px; background: transparent; border: 1px solid var(--border);
+  color: var(--dim); cursor: pointer; width: 100%; margin-top: 8px;
+  border-radius: 2px; transition: all 0.15s;
+}
+.clear-btn:hover { border-color: var(--prisao); color: var(--prisao); }
+
+/* ── MAIN ── */
+#main { margin-left: var(--sidebar); flex: 1; }
+
+#progress { position:fixed; top:0; left:var(--sidebar); right:0; height:2px; background: var(--bg3); z-index:300; }
+#progress-fill { height:100%; width:0; transition: width 0.1s; background: linear-gradient(90deg, var(--prisao), var(--hospital), var(--escola)); }
+
+#topbar {
+  position: sticky; top:0; z-index:100;
+  background: rgba(15,15,17,0.92); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 52px; display: flex; justify-content: space-between; align-items: center;
+}
+#topbar-label { font-family: var(--mono); font-size: 0.58rem; color: var(--dim); letter-spacing: 0.1em; text-transform: uppercase; }
+#topbar-hint  { font-family: var(--mono); font-size: 0.55rem; color: var(--dim); letter-spacing: 0.06em; }
+
+#content { max-width: 760px; margin: 0 auto; padding: 60px 52px 120px; }
+
+/* ── TYPOGRAPHY ── */
+.chapter { margin-bottom: 88px; }
+
+/* institution header */
+.inst-header { margin-bottom: 44px; }
+.inst-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase;
+  padding: 6px 14px; border: 1px solid; border-radius: 2px; margin-bottom: 18px;
+}
+.inst-header h2 { font-family: var(--syne); font-size: 2.6rem; font-weight: 800; color: var(--bright); line-height: 1.05; letter-spacing: -0.02em; }
+.inst-sub { font-family: var(--serif); font-size: 1rem; color: var(--dim); margin-top: 10px; font-style: italic; line-height: 1.6; }
+.inst-rule { margin-top: 22px; border: none; border-top: 1px solid var(--border); position: relative; }
+.inst-rule::before { content: ''; display: block; height: 2px; margin-top: -2px; width: 60px; }
+
+/* section header */
+.sec-head { margin-bottom: 26px; padding-bottom: 16px; border-bottom: 1px solid var(--border); display: flex; gap: 16px; align-items: baseline; }
+.sec-num { font-family: var(--mono); font-size: 0.58rem; color: var(--dim); letter-spacing: 0.1em; flex-shrink: 0; }
+.sec-head h3 { font-family: var(--syne); font-size: 1.3rem; font-weight: 700; color: var(--bright); line-height: 1.2; }
+
+/* body text */
+.text p { font-family: var(--serif); font-size: 1.06rem; line-height: 1.88; color: var(--text); margin-bottom: 18px; }
+.text p:last-child { margin-bottom: 0; }
+.text strong { color: var(--bright); font-weight: 600; }
+.text em { font-style: italic; }
+
+/* callout box */
+.callout {
+  border: 1px solid; border-radius: 3px;
+  padding: 22px 24px; margin: 28px 0;
+  position: relative;
+}
+.callout-label { font-family: var(--mono); font-size: 0.52rem; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 14px; display: block; }
+.callout ul { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.callout li { display: flex; gap: 12px; font-family: var(--serif); font-size: 0.96rem; line-height: 1.7; color: var(--text); }
+.callout li::before { content: '▸'; flex-shrink: 0; margin-top: 2px; font-size: 0.7rem; }
+.callout li strong { color: var(--bright); font-weight: 600; }
+
+blockquote {
+  margin: 28px 0; padding: 20px 26px;
+  border-left: 3px solid var(--border2); background: var(--bg2);
+  border-radius: 0 3px 3px 0;
+}
+blockquote p { font-family: var(--serif); font-size: 1rem; font-style: italic; line-height: 1.82; color: var(--text2); }
+blockquote cite { font-family: var(--mono); font-size: 0.58rem; color: var(--dim); margin-top: 10px; display: block; letter-spacing: 0.06em; text-transform: uppercase; }
+
+/* timeline / mechanism strip */
+.mecanism {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 1px; background: var(--border); margin: 28px 0; border-radius: 3px; overflow: hidden;
+}
+.mec-card { background: var(--bg2); padding: 20px 18px; }
+.mec-num { font-family: var(--mono); font-size: 0.55rem; letter-spacing: 0.15em; color: var(--dim); margin-bottom: 8px; }
+.mec-title { font-family: var(--syne); font-size: 0.9rem; font-weight: 700; color: var(--bright); margin-bottom: 10px; line-height: 1.3; }
+.mec-body { font-family: var(--serif); font-size: 0.87rem; line-height: 1.65; color: var(--text); }
+
+/* comparison table */
+.table-wrap { overflow-x: auto; margin: 28px 0; }
+table { width: 100%; border-collapse: collapse; }
+thead tr { background: var(--bg3); }
+th { font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase; padding: 12px 14px; text-align: left; color: var(--text2); border-bottom: 2px solid var(--border); }
+td { font-family: var(--serif); font-size: 0.93rem; padding: 11px 14px; border-bottom: 1px solid var(--border); color: var(--text); line-height: 1.55; vertical-align: top; }
+tr:nth-child(even) td { background: var(--bg2); }
+
+/* essay section */
+.essay-lede {
+  font-family: var(--syne); font-size: 1.5rem; font-weight: 600;
+  color: var(--bright); line-height: 1.4; margin-bottom: 28px;
+  border-left: 3px solid var(--ensaio); padding-left: 20px;
+}
+
+.divider { text-align: center; padding: 16px 0; margin: 20px 0; position: relative; }
+.divider::before { content: ''; position: absolute; left:0; right:0; top:50%; height:1px; background: var(--border); }
+.divider span { font-family: var(--mono); font-size: 0.52rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--dim); background: var(--bg); padding: 0 20px; position: relative; }
+
+/* contemporary examples */
+.examples-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 28px 0; }
+.ex-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 3px; padding: 18px 16px; }
+.ex-tag { font-family: var(--mono); font-size: 0.52rem; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 8px; display: block; }
+.ex-title { font-family: var(--syne); font-size: 0.9rem; font-weight: 700; color: var(--bright); margin-bottom: 8px; line-height: 1.3; }
+.ex-body { font-family: var(--serif); font-size: 0.85rem; line-height: 1.65; color: var(--text); }
+
+/* FLOATING MENU */
+#hl-menu {
+  position: absolute; display: none; z-index: 9999;
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: 4px; padding: 8px 14px;
+  align-items: center; gap: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+  user-select: none;
+}
+#hl-menu::after {
+  content: ''; position: absolute; bottom: -7px; left: 50%; transform: translateX(-50%);
+  border-left: 7px solid transparent; border-right: 7px solid transparent;
+  border-top: 7px solid var(--bg3);
+}
+.hm-label { font-family: var(--mono); font-size: 0.52rem; color: var(--dim); white-space: nowrap; letter-spacing: 0.1em; text-transform: uppercase; }
+.hm-cor { width: 22px; height: 22px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: transform 0.12s; flex-shrink: 0; }
+.hm-cor:hover { transform: scale(1.18); }
+.hm-fechar { background: none; border: none; color: var(--dim); font-size: 0.75rem; cursor: pointer; padding: 2px 4px; font-family: var(--mono); transition: color 0.12s; }
+.hm-fechar:hover { color: var(--bright); }
+
+/* color themes per institution */
+.escola-theme  .inst-badge { color: var(--escola);  border-color: var(--escola);  background: rgba(74,143,168,0.06); }
+.escola-theme  .inst-rule::before { background: var(--escola); }
+.hospital-theme .inst-badge { color: var(--hospital); border-color: var(--hospital); background: rgba(122,95,168,0.06); }
+.hospital-theme .inst-rule::before { background: var(--hospital); }
+.prisao-theme  .inst-badge { color: var(--prisao);  border-color: var(--prisao);  background: rgba(168,95,74,0.06); }
+.prisao-theme  .inst-rule::before { background: var(--prisao); }
+.ensaio-theme  .inst-badge { color: var(--ensaio);  border-color: var(--ensaio);  background: rgba(106,154,106,0.06); }
+.ensaio-theme  .inst-rule::before { background: var(--ensaio); }
+
+.escola-theme  .callout { border-color: rgba(74,143,168,0.3);  background: rgba(74,143,168,0.04); }
+.escola-theme  .callout-label { color: var(--escola); }
+.escola-theme  .callout li::before { color: var(--escola); }
+.hospital-theme .callout { border-color: rgba(122,95,168,0.3); background: rgba(122,95,168,0.04); }
+.hospital-theme .callout-label { color: var(--hospital); }
+.hospital-theme .callout li::before { color: var(--hospital); }
+.prisao-theme  .callout { border-color: rgba(168,95,74,0.3);  background: rgba(168,95,74,0.04); }
+.prisao-theme  .callout-label { color: var(--prisao); }
+.prisao-theme  .callout li::before { color: var(--prisao); }
+.ensaio-theme  .callout { border-color: rgba(106,154,106,0.3); background: rgba(106,154,106,0.04); }
+.ensaio-theme  .callout-label { color: var(--ensaio); }
+.ensaio-theme  .callout li::before { color: var(--ensaio); }
+
+@media (max-width: 860px) {
+  #sidebar { position: relative; width: 100%; height: auto; }
+  body { flex-direction: column; }
+  #main { margin-left: 0; }
+  #progress { left: 0; }
+  #content, #topbar { padding-left: 24px; padding-right: 24px; }
+  .mecanism, .examples-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div id="hl-menu">
+  <span class="hm-label">Sublinhar</span>
+  <button class="hm-cor" data-c="b" style="background:#4a8fa8" title="Azul — Escola"></button>
+  <button class="hm-cor" data-c="v" style="background:#7a5fa8" title="Violeta — Hospital"></button>
+  <button class="hm-cor" data-c="r" style="background:#a85f4a" title="Ferrugem — Prisão"></button>
+  <button class="hm-cor" data-c="g" style="background:#6a9a6a" title="Verde — Ensaio"></button>
+  <button class="hm-fechar" id="hm-fechar">✕</button>
+</div>
+
+<aside id="sidebar">
+  <div class="sb-top">
+    <span class="sb-eyebrow">Foucault · Análise Institucional</span>
+    <div class="sb-title">Instituições Modernas e Poder Disciplinar</div>
+    <div class="sb-sub">Escola, hospital e prisão como dispositivos de normalização</div>
+  </div>
+
+  <div class="nav-section">
+    <span class="nav-section-label" style="color:var(--escola)">A Escola</span>
+    <span class="nav-link escola" data-target="escola-intro">A sala de aula como dispositivo</span>
+    <span class="nav-link escola" data-target="escola-mecanismos">Mecanismos disciplinares</span>
+    <span class="nav-link escola" data-target="escola-nota">A nota como poder</span>
+  </div>
+
+  <div class="nav-section">
+    <span class="nav-section-label" style="color:var(--hospital)">O Hospital</span>
+    <span class="nav-link hospital" data-target="hospital-intro">O olhar clínico</span>
+    <span class="nav-link hospital" data-target="hospital-corpo">O corpo como objeto</span>
+    <span class="nav-link hospital" data-target="hospital-normal">A norma e o desvio</span>
+  </div>
+
+  <div class="nav-section">
+    <span class="nav-section-label" style="color:var(--prisao)">A Prisão</span>
+    <span class="nav-link prisao" data-target="prisao-intro">Punir e disciplinar</span>
+    <span class="nav-link prisao" data-target="prisao-pan">O panóptico generalizado</span>
+    <span class="nav-link prisao" data-target="prisao-fracasso">O fracasso útil</span>
+  </div>
+
+  <div class="nav-section">
+    <span class="nav-section-label" style="color:var(--ensaio)">Ensaio</span>
+    <span class="nav-link ensaio" data-target="ensaio-hoje">Poder disciplinar hoje</span>
+    <span class="nav-link ensaio" data-target="ensaio-digital">A vigilância digital</span>
+    <span class="nav-link ensaio" data-target="ensaio-resistencia">Resistência e brechas</span>
+  </div>
+
+  <div class="nav-section">
+    <span class="nav-section-label" style="color:var(--dim)">Síntese</span>
+    <span class="nav-link white" data-target="sintese">Comparação e conclusão</span>
+  </div>
+
+  <div class="hl-panel">
+    <span class="hl-label">Anotações</span>
+    <div id="saved-list"><span class="saved-empty">selecione texto para sublinhar</span></div>
+    <button class="clear-btn" id="clear-btn">limpar todas</button>
+  </div>
+</aside>
+
+<main id="main">
+  <div id="progress"><div id="progress-fill"></div></div>
+  <div id="topbar">
+    <span id="topbar-label">Foucault — Instituições Modernas e Poder Disciplinar</span>
+    <span id="topbar-hint">selecione texto para sublinhar</span>
+  </div>
+
+  <div id="content">
+
+    <!-- ══ ESCOLA ══ -->
+    <section id="escola-intro" class="chapter escola-theme">
+      <div class="inst-header">
+        <div class="inst-badge">🏫 Instituição I</div>
+        <h2>A Escola</h2>
+        <div class="inst-sub">A sala de aula como dispositivo de fabricação do sujeito dócil e útil</div>
+        <div class="inst-rule"></div>
+      </div>
+      <div class="text">
+        <p>Para Foucault, a escola moderna não é simplesmente um lugar onde se transmite conhecimento. É uma <strong>máquina de produzir sujeitos</strong> — corpos disciplinados, mentes ordenadas, comportamentos previsíveis. A arquitetura, o horário, a disposição das carteiras, o sino, a chamada: tudo isso é tecnologia de poder antes de ser pedagogia.</p>
+        <p>A escola moderna surge historicamente no mesmo momento em que surgem a prisão, o hospital e o quartel — século XVII e XVIII. Não é coincidência. Todas essas instituições compartilham uma mesma <em>forma</em>: o espaço fechado, a vigilância hierárquica, a avaliação constante, a sanção normalizadora. Foucault chama isso de <strong>sociedade disciplinar</strong>.</p>
+        <p>O que a escola disciplina? Antes de tudo, o <em>corpo</em>. Sentar-se corretamente, ficar em silêncio, levantar a mão, não olhar para o lado, esperar o sinal. O corpo do aluno é adestrado antes que sua mente seja instruída. E esse adestramento não é acidente — é o pré-requisito para o sujeito produtivo que o capitalismo industrial precisava fabricar em larga escala.</p>
+      </div>
+      <blockquote>
+        <p>O poder disciplinar tem como correlato uma individualidade não só analítica e "celular", mas também natural e "orgânica".</p>
+        <cite>— Foucault, Vigiar e Punir, 1975</cite>
+      </blockquote>
+    </section>
+
+    <section id="escola-mecanismos" class="chapter escola-theme">
+      <div class="sec-head">
+        <span class="sec-num">01.2</span>
+        <h3>Os mecanismos disciplinares na escola</h3>
+      </div>
+      <div class="mecanism">
+        <div class="mec-card">
+          <div class="mec-num" style="color:var(--escola)">MECANISMO I</div>
+          <div class="mec-title">Vigilância Hierárquica</div>
+          <div class="mec-body">O professor vê todos os alunos — nenhum aluno vê todos os outros. A disposição da sala em fileiras voltadas para o quadro cria um campo de visibilidade assimétrico que é em si uma forma de controle. Ver sem ser visto: estrutura panóptica elementar.</div>
+        </div>
+        <div class="mec-card">
+          <div class="mec-num" style="color:var(--escola)">MECANISMO II</div>
+          <div class="mec-title">Sanção Normalizadora</div>
+          <div class="mec-body">Cada comportamento é referido a uma norma — não ao bem ou ao mal, mas ao normal e ao anormal. Chegar atrasado, conversar, não saber a resposta: punições que não visam castigar o ato mas corrigir o desvio. O aluno é constantemente comparado à média.</div>
+        </div>
+        <div class="mec-card">
+          <div class="mec-num" style="color:var(--escola)">MECANISMO III</div>
+          <div class="mec-title">Exame Permanente</div>
+          <div class="mec-body">A prova, o teste, a chamada oral, o boletim. O exame combina a técnica da vigilância (observa) com a técnica da sanção (classifica). Ele torna cada aluno um "caso" — um indivíduo descrito, avaliado, comparado, incluído ou excluído.</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>Esses três mecanismos — vigilância, sanção normalizadora e exame — são, para Foucault, o núcleo de toda disciplina institucional. Eles não são exclusivos da escola: reaparecem na fábrica, no hospital, no quartel, na prisão. O que muda é apenas o conteúdo treinado, não a <em>forma</em> do poder exercido.</p>
+        <p>A distribuição do espaço escolar também é tecnologia disciplinar. <strong>Cada aluno tem seu lugar</strong>, cada lugar tem seu aluno. A fileira permite saber quem está presente, quem está ausente, quem se move. O espaço quadriculado impede a circulação livre — e circulação livre é circulação incontrolável, portanto ameaça à ordem.</p>
+      </div>
+    </section>
+
+    <section id="escola-nota" class="chapter escola-theme">
+      <div class="sec-head">
+        <span class="sec-num">01.3</span>
+        <h3>A nota como instrumento de poder</h3>
+      </div>
+      <div class="text">
+        <p>A nota parece simplesmente medir o conhecimento. Para Foucault, ela faz algo mais profundo: <strong>produz o indivíduo como caso</strong>. Antes do exame moderno, as pessoas existiam em massas — súditos, camponeses, fiéis. O exame individualiza: cria um registro de cada pessoa, uma história, um perfil comparável.</p>
+        <p>O boletim escolar é um dos primeiros documentos de individualização em massa da história. Ele captura a vida de uma criança em números, distribui-a numa hierarquia (o melhor da turma, o fraco, o mediano), e essa distribuição tem consequências reais — aprovação, reprovação, encaminhamento para turmas especiais.</p>
+      </div>
+      <div class="callout">
+        <span class="callout-label">§ O que a nota realmente faz</span>
+        <ul>
+          <li><strong>Classifica:</strong> Distribui os alunos em uma hierarquia de desempenho que frequentemente coincide com hierarquias sociais preexistentes — raça, classe, gênero.</li>
+          <li><strong>Normaliza:</strong> Define o que é "suficiente", "bom", "excelente" — não em termos absolutos, mas em relação à média do grupo. O normal é estatístico antes de ser moral.</li>
+          <li><strong>Individualiza:</strong> Transforma cada aluno em um caso singular com história documentada — um arquivo que o seguirá por anos.</li>
+          <li><strong>Responsabiliza:</strong> Atribui ao indivíduo o resultado de um processo social — como se tirar nota baixa fosse problema do aluno, não do sistema.</li>
+        </ul>
+      </div>
+      <div class="text">
+        <p>Foucault não está dizendo que escolas são prisões ou que professores são carcereiros. Está mostrando que a <em>forma</em> do poder disciplinar — produzida historicamente em certos contextos — permeia as instituições aparentemente mais benevolentes e progressistas. O que torna isso mais eficaz do que a coerção pura é que <strong>os sujeitos internalizaram a norma</strong>: o aluno se autodisciplina, estuda porque quer a nota, não porque tem medo da palmatória.</p>
+      </div>
+    </section>
+
+    <div class="divider"><span>o hospital</span></div>
+
+    <!-- ══ HOSPITAL ══ -->
+    <section id="hospital-intro" class="chapter hospital-theme">
+      <div class="inst-header">
+        <div class="inst-badge">🏥 Instituição II</div>
+        <h2>O Hospital</h2>
+        <div class="inst-sub">O olhar clínico e a produção do corpo como objeto de saber-poder</div>
+        <div class="inst-rule"></div>
+      </div>
+      <div class="text">
+        <p>Foucault dedicou um livro inteiro ao hospital moderno: <em>O Nascimento da Clínica</em> (1963). Seu argumento central é que a medicina moderna não é simplesmente uma ciência mais precisa — é uma nova <strong>forma de olhar</strong> que transforma o doente em objeto de saber e, ao mesmo tempo, em objeto de poder.</p>
+        <p>Antes do século XVIII, o médico perguntava ao doente: "o que você sente?" O doente falava — a doença era narrada em primeira pessoa. Com a clínica moderna, a pergunta se transforma: "onde dói?" O corpo torna-se o texto que o médico lê. A subjetividade do doente — seus medos, sua história, seu contexto — torna-se ruído que atrapalha o diagnóstico preciso.</p>
+        <p>Esse <strong>olhar clínico</strong> (<em>regard médical</em>) é uma forma de poder porque é assimétrico: o médico sabe, o paciente não sabe. O médico nomeia a doença, e esse ato de nomeação tem consequências reais — internação, cirurgia, medicação, afastamento do trabalho. O saber médico é imediatamente poder sobre o corpo.</p>
+      </div>
+    </section>
+
+    <section id="hospital-corpo" class="chapter hospital-theme">
+      <div class="sec-head">
+        <span class="sec-num">02.2</span>
+        <h3>O corpo como objeto de saber e poder</h3>
+      </div>
+      <div class="text">
+        <p>O hospital moderno, como instituição, organiza os corpos com a mesma lógica disciplinar da escola e do quartel. Os leitos são numerados, os pacientes são identificados por pulseiras e prontuários, os horários de medicação são precisos, a circulação pelo corredor é controlada. O paciente internado perde progressivamente o controle sobre seu próprio corpo.</p>
+      </div>
+      <div class="callout">
+        <span class="callout-label">§ Anatomopolítica dos corpos individuais</span>
+        <ul>
+          <li><strong>O prontuário:</strong> O arquivo médico que transforma o histórico de saúde em dado documentado — a pessoa vira um "caso clínico" com código de doença (CID), medicações, procedimentos. Cada consulta adiciona uma entrada ao arquivo.</li>
+          <li><strong>A anamnese:</strong> O interrogatório médico que traduz a experiência vivida da dor em categoria diagnóstica. O relato subjetivo do sofrimento é codificado em linguagem técnica que o paciente muitas vezes não compreende.</li>
+          <li><strong>A internação:</strong> O hospital como espaço de separação — o doente é retirado de seu meio social, familiar, cotidiano, e inserido num ambiente de vigilância total. O hospital cura e, ao mesmo tempo, controla.</li>
+          <li><strong>A psiquiatria:</strong> Foucault analisa extensamente em <em>História da Loucura</em> como a psiquiatria define o "normal" e o "louco" — e usa esse poder de definição para excluir, internar, tratar sem consentimento.</li>
+        </ul>
+      </div>
+      <div class="text">
+        <p>A lógica foucaultiana não é que médicos são maliciosos ou que hospitais são lugares de opressão consciente. É que <strong>o poder opera nas formas institucionais</strong> — nos saberes legítimos, nas arquiteturas, nos procedimentos — independentemente das intenções individuais dos que os habitam. Um médico pode ser genuinamente compassivo e, ao mesmo tempo, exercer poder disciplinar sobre o paciente.</p>
+      </div>
+      <blockquote>
+        <p>O hospital não é simplesmente o lugar onde se cura. É o lugar onde se aprende a observar, a classificar, a comparar — onde se produz o saber médico ao mesmo tempo em que se exerce o poder sobre os corpos doentes.</p>
+        <cite>— Foucault, O Nascimento da Clínica, 1963 (paráfrase)</cite>
+      </blockquote>
+    </section>
+
+    <section id="hospital-normal" class="chapter hospital-theme">
+      <div class="sec-head">
+        <span class="sec-num">02.3</span>
+        <h3>A norma médica e a produção do desvio</h3>
+      </div>
+      <div class="text">
+        <p>Um dos conceitos centrais de Foucault, derivado de sua análise do hospital, é a distinção entre <strong>lei</strong> e <strong>norma</strong>. A lei é binária: permitido ou proibido. A norma é estatística e gradual: normal, limítrofe, anormal. A medicina opera por normas — não te pune por ser doente, mas te classifica, te trata, te integra ou te exclui.</p>
+        <p>A normalização médica tem consequências políticas profundas. Quando a medicina define o que é um corpo "saudável", está também definindo implicitamente o que é um corpo "desviante". Historicamente, essa lógica foi usada para patologizar a homossexualidade (classificada como doença até 1990 pela OMS), a "histeria" feminina, o comportamento de pessoas negras que tentavam escapar da escravidão (<em>drapetomania</em>, diagnóstico real do século XIX).</p>
+        <p>O poder da norma é mais sutil e mais penetrante do que o poder da lei porque <strong>o desviante tende a aceitar seu desvio</strong>. O criminoso pode rejeitar a lei que o pune. O "louco" classificado como tal pode internalizar esse diagnóstico e com ele construir sua identidade. A norma produz sujeitos que se autoclassificam.</p>
+      </div>
+    </section>
+
+    <div class="divider"><span>a prisão</span></div>
+
+    <!-- ══ PRISÃO ══ -->
+    <section id="prisao-intro" class="chapter prisao-theme">
+      <div class="inst-header">
+        <div class="inst-badge">🏛️ Instituição III</div>
+        <h2>A Prisão</h2>
+        <div class="inst-sub">Vigiar e Punir — a genealogia do poder disciplinar moderno</div>
+        <div class="inst-rule"></div>
+      </div>
+      <div class="text">
+        <p><em>Vigiar e Punir</em> (1975) começa com uma cena brutal: a execução pública e esquartejamento de Damiens, em 1757, por tentativa de regicídio. Depois apresenta o regulamento detalhado de uma prisão reformada, de 1838. O contraste é o argumento: em menos de um século, a punição se deslocou do espetáculo do sofrimento corporal para a gestão calculada do tempo, do espaço e da alma do detento.</p>
+        <p>A pergunta de Foucault não é "a prisão é mais humana?" — mas <strong>"o que mudou no poder que se exerce sobre o crime?"</strong>. A resposta é que o alvo mudou: de punir o crime (o ato), passou-se a corrigir o criminoso (o sujeito). E para corrigir o sujeito, é preciso conhecê-lo, vigiá-lo, transformá-lo — o que exige instituições muito mais complexas e penetrantes do que o patíbulo público.</p>
+      </div>
+      <blockquote>
+        <p>A alma é o efeito e o instrumento de uma anatomia política; a alma é a prisão do corpo.</p>
+        <cite>— Foucault, Vigiar e Punir, 1975</cite>
+      </blockquote>
+    </section>
+
+    <section id="prisao-pan" class="chapter prisao-theme">
+      <div class="sec-head">
+        <span class="sec-num">03.2</span>
+        <h3>O panóptico e a vigilância sem vigilante</h3>
+      </div>
+      <div class="text">
+        <p>O Panóptico de Jeremy Bentham — projeto arquitetônico de 1785 — é para Foucault o <strong>diagrama do poder disciplinar moderno</strong>. Não porque todo edifício foi construído assim, mas porque essa forma arquitetônica expressa a lógica de um poder que não precisa ser exercido continuamente para funcionar.</p>
+        <p>No Panóptico, os detentos nunca sabem quando estão sendo observados — a torre central pode estar vazia. Mas como <em>podem</em> estar sendo observados a qualquer momento, comportam-se como se estivessem sempre sob vigilância. O poder se torna <strong>automático</strong>: o detento internaliza o olhar e passa a exercer sobre si mesmo a vigilância que antes exigia um guarda físico.</p>
+      </div>
+      <div class="callout">
+        <span class="callout-label">§ O efeito panóptico generalizado</span>
+        <ul>
+          <li><strong>Na escola:</strong> O aluno que faz o dever mesmo quando o professor não está olhando — porque internalizou a norma e a sanção associada.</li>
+          <li><strong>No trabalho:</strong> O funcionário que mantém a produtividade porque sabe que os sistemas de monitoramento registram tudo — ou porque internalizou a métrica de desempenho.</li>
+          <li><strong>Nas redes sociais:</strong> O usuário que auto-censura o que posta porque sabe que empregadores, familiares, algoritmos estão observando — sem que haja um observador específico identificável.</li>
+          <li><strong>Na medicina:</strong> O paciente que segue a dieta prescrita mesmo sem consulta marcada — porque internalizou a norma médica de saúde e o medo das consequências do desvio.</li>
+        </ul>
+      </div>
+      <div class="text">
+        <p>O efeito panóptico é a realização máxima da disciplina: quando o sujeito vigia a si mesmo, o poder externo torna-se desnecessário. <strong>A liberdade e o controle coincidem</strong> — o sujeito é livre para fazer o que quiser, mas quer o que o poder quer que ele queira. Isso é o que Foucault chama de sujeição (<em>assujettissement</em>): tornar-se sujeito é simultaneamente ganhar uma identidade e submeter-se a uma forma de poder.</p>
+      </div>
+    </section>
+
+    <section id="prisao-fracasso" class="chapter prisao-theme">
+      <div class="sec-head">
+        <span class="sec-num">03.3</span>
+        <h3>O "fracasso" útil da prisão</h3>
+      </div>
+      <div class="text">
+        <p>A prisão é, oficialmente, um fracasso: as taxas de reincidência são altíssimas em todos os países, e qualquer criminologista sabe que a prisão tende a aumentar a especialização criminal. Então por que a prisão persiste, apesar de todos saberem que "não funciona"?</p>
+        <p>A resposta de Foucault é perturbadora: porque a prisão <strong>funciona muito bem para outra coisa</strong>. Não para reabilitar criminosos — mas para produzir e gerir a <em>delinquência</em> como categoria útil ao poder. A prisão fabrica delinquentes (pessoas com ficha, estigmatizadas, excluídas do mercado formal), e essa população de delinquentes serve a vários propósitos: justifica o aparato policial, fornece mão de obra barata e controlável, estigmatiza certas classes sociais e raças, e desvia atenção das ilegalidades das classes dominantes (sonegação, corrupção) para as ilegalidades das classes subalternas (furto, tráfico).</p>
+      </div>
+      <div class="callout">
+        <span class="callout-label">§ A delinquência gerida — aplicação ao Brasil</span>
+        <ul>
+          <li><strong>Encarceramento seletivo:</strong> O Brasil tem a 3ª maior população carcerária do mundo — majoritariamente negra, jovem, periférica, presa por crimes patrimoniais e tráfico. Crimes de colarinho branco têm taxas de prisão incomparavelmente menores.</li>
+          <li><strong>Reincidência estrutural:</strong> Ex-detentos enfrentam exclusão do mercado formal, impossibilidade de acesso a crédito, discriminação — condições que aumentam a probabilidade de retorno ao crime e à prisão.</li>
+          <li><strong>Criminalização da pobreza:</strong> A mesma conduta (posse de droga) é tratada diferentemente dependendo do perfil racial e de classe do suspeito — dado documentado em pesquisas sobre o sistema de justiça criminal brasileiro.</li>
+        </ul>
+      </div>
+    </section>
+
+    <div class="divider"><span>ensaio — poder disciplinar contemporâneo</span></div>
+
+    <!-- ══ ENSAIO ══ -->
+    <section id="ensaio-hoje" class="chapter ensaio-theme">
+      <div class="inst-header">
+        <div class="inst-badge">✍️ Ensaio</div>
+        <h2>Poder Disciplinar na Sociedade Contemporânea</h2>
+        <div class="inst-sub">O que Foucault nos permite ver sobre o presente — e o que talvez não alcance</div>
+        <div class="inst-rule"></div>
+      </div>
+      <div class="essay-lede">
+        Foucault morreu em 1984. Não viu a internet, as redes sociais, os algoritmos de recomendação, a biometria ubíqua ou os sistemas de crédito social. Mas suas ferramentas analíticas continuam sendo das mais produtivas para pensar o poder no século XXI.
+      </div>
+      <div class="text">
+        <p>A sociedade disciplinar descrita em Vigiar e Punir era centrada em <strong>instituições fechadas</strong>: a escola, a fábrica, o hospital, o quartel, a prisão. O sujeito passava de uma instituição para outra ao longo da vida, sendo disciplinado em cada uma. O poder era visível em suas arquiteturas, em seus regulamentos, em seus agentes uniformizados.</p>
+        <p>O filósofo Gilles Deleuze, em um texto seminal de 1990, propôs que a sociedade disciplinar estava sendo substituída por uma <strong>sociedade de controle</strong>. Nas sociedades de controle, o poder não opera mais por confinamento em espaços fechados — opera por modulação contínua em espaço aberto. Não é mais a fábrica, é a empresa. Não é mais a prisão de muros físicos, é o monitoramento eletrônico. Não é mais o exame pontual, é a avaliação permanente de desempenho.</p>
+        <p>Essa transição não elimina a lógica foucaultiana — a intensifica e a dissemina. O panóptico saiu dos muros e entrou no bolso de todos, na forma do smartphone.</p>
+      </div>
+    </section>
+
+    <section id="ensaio-digital" class="chapter ensaio-theme">
+      <div class="sec-head">
+        <span class="sec-num">04.2</span>
+        <h3>A vigilância digital como novo panóptico</h3>
+      </div>
+      <div class="text">
+        <p>A arquitetura das plataformas digitais reproduz e intensifica a lógica panóptica. O usuário do Instagram sabe que pode ser visto — por seguidores, por empregadores, por algoritmos — mas não sabe exatamente quem o está vendo quando. Essa incerteza produz o efeito disciplinar clássico: <strong>o usuário se autocensura e se performa</strong> para uma audiência imaginada.</p>
+      </div>
+      <div class="examples-grid">
+        <div class="ex-card">
+          <span class="ex-tag" style="color:var(--escola)">Escola Digitalizada</span>
+          <div class="ex-title">LMS e monitoramento de aprendizado</div>
+          <div class="ex-body">Plataformas como Google Classroom registram quando o aluno acessou o material, por quanto tempo, quantas tentativas fez em cada exercício. O exame permanente tornou-se literal — o arquivo do aluno atualiza em tempo real.</div>
+        </div>
+        <div class="ex-card">
+          <span class="ex-tag" style="color:var(--hospital)">Saúde Digital</span>
+          <div class="ex-title">Wearables e autovigilância corporal</div>
+          <div class="ex-body">Relógios inteligentes que monitoram passos, batimentos, sono, estresse. O olhar clínico que antes era do médico sobre o paciente é agora exercido pelo próprio sujeito sobre si mesmo — e vendido como empoderamento.</div>
+        </div>
+        <div class="ex-card">
+          <span class="ex-tag" style="color:var(--prisao)">Controle Social</span>
+          <div class="ex-title">Score de crédito e reputação digital</div>
+          <div class="ex-body">O Serasa Score, o sistema de crédito social chinês, o rating de motoristas do Uber: sistemas que convertem comportamento passado em uma nota que abre ou fecha portas no presente. A sanção normalizadora em escala de plataforma.</div>
+        </div>
+        <div class="ex-card">
+          <span class="ex-tag" style="color:var(--ensaio)">Trabalho Plataformizado</span>
+          <div class="ex-title">Gestão algorítmica do trabalho</div>
+          <div class="ex-body">O entregador de app que não pode ver quem o avaliou, mas sabe que cada entrega é avaliada, cada recusa registrada, cada desvio de rota monitorado. O gerente humano foi substituído pelo algoritmo — mas o poder disciplinar permanece intacto.</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>A novidade do poder digital não é que vigia — é que <strong>vigia e seduz simultaneamente</strong>. O Instagram não te obriga a postar — você <em>quer</em> postar. O Duolingo não te pune por não estudar — te dá uma sequência de dias que você não quer perder. A gamificação é disciplina com roupagem de prazer. O sujeito do panóptico digital não sente o poder como coerção — sente como escolha livre.</p>
+      </div>
+    </section>
+
+    <section id="ensaio-resistencia" class="chapter ensaio-theme">
+      <div class="sec-head">
+        <span class="sec-num">04.3</span>
+        <h3>Resistência e brechas — o poder não é total</h3>
+      </div>
+      <div class="text">
+        <p>Um erro comum na leitura de Foucault é transformá-lo em um pensador do poder total, irresistível, que tudo captura. Foucault é explícito: <strong>onde há poder, há resistência</strong>. E a resistência não vem de um ponto externo ao poder — emerge de dentro das próprias relações de poder.</p>
+        <p>Na escola, o aluno que passa colas, que usa o recreio para resistir à disciplina do espaço, que subverte o currículo com perguntas fora do roteiro — está exercendo resistência dentro do dispositivo disciplinar. No hospital, o paciente que pesquisa seu diagnóstico, que recusa tratamentos, que exige segunda opinião — está apropriando-se do saber médico para resistir à assimetria de poder da clínica.</p>
+        <p>No mundo digital, a resistência toma formas como o uso de VPNs e navegadores anônimos, a criação de contas falsas, a recusa ao rastreamento, os movimentos de decrescimento digital. Mas Foucault alertaria: mesmo a resistência pode ser capturada e reincorporada — o mercado vende privacidade como produto premium, a contracultura vira estética comercializável.</p>
+      </div>
+      <div class="callout">
+        <span class="callout-label">§ Formas contemporâneas de resistência foucaultiana</span>
+        <ul>
+          <li><strong>Cuidado de si:</strong> O conceito tardio de Foucault — práticas através das quais o sujeito constitui a si mesmo de forma que não coincide com as normas impostas. Não é individualismo — é recusa da subjetividade fabricada.</li>
+          <li><strong>Contradiscursos:</strong> Saberes subjugados que a norma dominante silencia — medicina popular, saberes indígenas, psicologias não-ocidentais — reemergindo e disputando legitimidade.</li>
+          <li><strong>Política dos corpos:</strong> Movimentos que afirmam corpos que a norma classifica como desviantes — gordofobia, transfobia, racismo médico — como formas de resistência à normalização.</li>
+        </ul>
+      </div>
+    </section>
+
+    <div class="divider"><span>síntese</span></div>
+
+    <!-- SÍNTESE -->
+    <section id="sintese" class="chapter">
+      <div class="inst-header">
+        <div class="inst-badge" style="color:var(--text2); border-color:var(--border2); background:var(--bg2)">⊕ Síntese Comparativa</div>
+        <h2>As três instituições — e além</h2>
+        <div class="inst-sub">O que escola, hospital e prisão têm em comum — e o que o presente adiciona</div>
+        <div class="inst-rule" style="border-color:var(--border2)"></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Dimensão</th>
+              <th style="color:var(--escola)">Escola</th>
+              <th style="color:var(--hospital)">Hospital</th>
+              <th style="color:var(--prisao)">Prisão</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Alvo declarado</strong></td><td>Instrução</td><td>Cura</td><td>Punição / Reabilitação</td></tr>
+            <tr><td><strong>Alvo real (Foucault)</strong></td><td>Produção do sujeito dócil e útil</td><td>Produção do corpo medicalizado</td><td>Gestão da delinquência</td></tr>
+            <tr><td><strong>Mecanismo central</strong></td><td>Exame + nota</td><td>Olhar clínico + diagnóstico</td><td>Vigilância + disciplina temporal</td></tr>
+            <tr><td><strong>Produto</strong></td><td>Trabalhador normalizado</td><td>Paciente obediente</td><td>Delinquente administrado</td></tr>
+            <tr><td><strong>Saber associado</strong></td><td>Pedagogia / Psicologia educacional</td><td>Medicina / Psiquiatria</td><td>Criminologia / Direito penal</td></tr>
+            <tr><td><strong>Equivalente digital</strong></td><td>LMS / EdTechs</td><td>Wearables / Telemedicina</td><td>Monitoramento eletrônico / Score</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="text">
+        <p>O legado de Foucault para pensar o presente não é uma teoria pronta — é um <strong>método de suspeita</strong>. Diante de qualquer instituição que se apresente como neutra, científica, benevolente, a pergunta foucaultiana é: que relações de poder essa instituição produz? Que sujeitos fabrica? Que saberes legitima e que saberes silencia? Quem se beneficia da forma atual das coisas?</p>
+        <p>Essa suspeita não é niilismo. Foucault não diz que escolas devem ser fechadas, que hospitais são prisões disfarçadas, que toda ciência é dominação. Diz que nada é neutro — e que reconhecer o poder em ação é o primeiro passo para resistir a ele, transformá-lo, inventar outras formas de viver juntos.</p>
+      </div>
+      <blockquote>
+        <p>Meu papel — e esse é um termo muito pomposo — é mostrar às pessoas que elas são muito mais livres do que pensam; que elas tomam por verdadeiro, por evidente, certos temas fabricados em um momento particular da história, e que essa pretensa evidência pode ser criticada e destruída.</p>
+        <cite>— Foucault, entrevista a Rux Martin, 1982</cite>
+      </blockquote>
+    </section>
+
+  </div>
+</main>
+
+<script>
+(function() {
+  'use strict';
+
+  // progresso
+  window.addEventListener('scroll', function() {
+    var d = document.documentElement;
+    var s = d.scrollTop || document.body.scrollTop;
+    var h = d.scrollHeight - d.clientHeight;
+    document.getElementById('progress-fill').style.width = (h > 0 ? s/h*100 : 0) + '%';
+    marcarAtivo();
+  });
+
+  // nav
+  document.querySelectorAll('.nav-link').forEach(function(el) {
+    el.addEventListener('click', function() {
+      var alvo = document.getElementById(this.getAttribute('data-target'));
+      if (alvo) alvo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  function marcarAtivo() {
+    var secoes = document.querySelectorAll('.chapter');
+    var ativaId = null;
+    secoes.forEach(function(s) { if (s.getBoundingClientRect().top < 120) ativaId = s.id; });
+    document.querySelectorAll('.nav-link').forEach(function(l) {
+      l.classList.toggle('active', l.getAttribute('data-target') === ativaId);
+    });
+  }
+
+  // highlight
+  var CORES = { b:'#4a8fa8', v:'#7a5fa8', r:'#a85f4a', g:'#6a9a6a' };
+  var CORES_TXT = { b:'#eef5f8', v:'#f0eef8', r:'#f8f0ee', g:'#eef8ee' };
+  var destaques = [], proxId = 1, rangeAtual = null;
+  var menu = document.getElementById('hl-menu');
+
+  function fecharMenu() { menu.style.display = 'none'; rangeAtual = null; }
+
+  menu.addEventListener('mousedown', function(e) { e.preventDefault(); });
+  menu.addEventListener('touchstart', function(e) { e.stopPropagation(); }, { passive: true });
+
+  document.getElementById('hm-fechar').addEventListener('click', function() {
+    fecharMenu(); window.getSelection().removeAllRanges();
+  });
+
+  menu.querySelectorAll('.hm-cor').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var cor = this.getAttribute('data-c');
+      if (rangeAtual) aplicarHighlight(rangeAtual, cor);
+      fecharMenu(); window.getSelection().removeAllRanges();
+    });
+    btn.addEventListener('touchend', function(e) {
+      e.preventDefault(); e.stopPropagation();
+      var cor = this.getAttribute('data-c');
+      if (rangeAtual) aplicarHighlight(rangeAtual, cor);
+      fecharMenu(); window.getSelection().removeAllRanges();
+    });
+  });
+
+  function mostrarMenu(e) {
+    var isToque = e && e.type === 'touchend';
+    setTimeout(function() {
+      var sel = window.getSelection();
+      if (!sel || sel.isCollapsed || sel.rangeCount === 0) return;
+      if (sel.toString().trim().length < 1) return;
+      var range = sel.getRangeAt(0);
+      rangeAtual = range.cloneRange();
+      var rect = range.getBoundingClientRect();
+      var sx = window.pageXOffset || document.documentElement.scrollLeft;
+      var sy = window.pageYOffset || document.documentElement.scrollTop;
+      menu.style.left = Math.max(8, rect.left + sx + rect.width/2 - 130) + 'px';
+      menu.style.top  = Math.max(8, rect.top  + sy - 56) + 'px';
+      menu.style.display = 'flex';
+    }, isToque ? 100 : 20);
+  }
+
+  document.getElementById('content').addEventListener('mouseup', mostrarMenu);
+  document.getElementById('content').addEventListener('touchend', mostrarMenu);
+  document.addEventListener('mousedown', function(e) { if (!menu.contains(e.target)) fecharMenu(); });
+  document.addEventListener('touchstart', function(e) { if (!menu.contains(e.target)) setTimeout(function(){ fecharMenu(); }, 50); }, { passive: true });
+
+  function aplicarHighlight(range, cor) {
+    var id = proxId++;
+    var texto = range.toString().trim();
+    var anc = range.commonAncestorContainer;
+    var el = anc.nodeType === 3 ? anc.parentElement : anc;
+    var sec = el ? el.closest('.chapter') : null;
+    var secNome = 'Geral';
+    if (sec) { var h = sec.querySelector('h2,h3'); if (h) secNome = h.textContent.trim().slice(0, 40); }
+    var spans = [];
+    coletarNos(range).forEach(function(no) {
+      var ini = no === range.startContainer ? range.startOffset : 0;
+      var fim = no === range.endContainer   ? range.endOffset   : no.length;
+      if (ini >= fim) return;
+      var sp = document.createElement('span');
+      sp.style.cssText = 'background:' + CORES[cor] + ';color:' + CORES_TXT[cor] + ';border-radius:2px;padding:0 1px;cursor:pointer;';
+      sp.dataset.hid = id; sp.title = 'Clique para remover';
+      sp.textContent = no.nodeValue.slice(ini, fim);
+      sp.addEventListener('click', function(ev) { ev.stopPropagation(); remover(id); });
+      var frag = document.createDocumentFragment();
+      if (ini > 0) frag.appendChild(document.createTextNode(no.nodeValue.slice(0, ini)));
+      frag.appendChild(sp);
+      if (fim < no.length) frag.appendChild(document.createTextNode(no.nodeValue.slice(fim)));
+      no.parentNode.replaceChild(frag, no);
+      spans.push(sp);
+    });
+    if (!spans.length) return;
+    destaques.push({ id, texto: texto.slice(0,80), cor, sec: secNome, spans });
+    renderLista();
+  }
+
+  function coletarNos(range) {
+    var anc = range.commonAncestorContainer;
+    if (anc.nodeType === 3) return [anc];
+    var nos = [], w = document.createTreeWalker(anc, NodeFilter.SHOW_TEXT, null, false), n;
+    while ((n = w.nextNode())) { try { if (range.intersectsNode(n)) nos.push(n); } catch(e){} }
+    return nos;
+  }
+
+  function remover(id) {
+    var idx = destaques.findIndex(function(h) { return h.id === id; });
+    if (idx < 0) return;
+    destaques[idx].spans.forEach(function(sp) {
+      if (!sp.parentNode) return;
+      var pai = sp.parentNode;
+      while (sp.firstChild) pai.insertBefore(sp.firstChild, sp);
+      pai.removeChild(sp);
+      try { pai.normalize(); } catch(e){}
+    });
+    destaques.splice(idx, 1);
+    renderLista();
+  }
+
+  function renderLista() {
+    var lista = document.getElementById('saved-list');
+    if (!destaques.length) { lista.innerHTML = '<span class="saved-empty">selecione texto para sublinhar</span>'; return; }
+    lista.innerHTML = destaques.map(function(h) {
+      return '<div class="saved-item" style="background:rgba(' + hexToRgb(CORES[h.cor]) + ',0.18);color:' + CORES[h.cor] + '" onclick="__ir(' + h.id + ')">' +
+        '<div class="saved-tag">' + h.sec + '</div>\u201c' + h.texto + (h.texto.length>=80?'\u2026':'') + '\u201d</div>';
+    }).join('');
+  }
+
+  function hexToRgb(hex) {
+    var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+    return r+','+g+','+b;
+  }
+
+  window.__ir = function(id) {
+    var h = destaques.find(function(x){ return x.id===id; });
+    if (!h || !h.spans[0]) return;
+    h.spans[0].scrollIntoView({ behavior:'smooth', block:'center' });
+    h.spans.forEach(function(s) {
+      s.style.outline = '2px solid ' + CORES[h.cor];
+      setTimeout(function(){ s.style.outline=''; }, 1500);
+    });
+  };
+
+  document.getElementById('clear-btn').addEventListener('click', function() {
+    [...destaques.map(function(h){return h.id;})].forEach(function(id){ try{remover(id);}catch(e){} });
+  });
+
+  marcarAtivo();
+})();
+</script>
+</body>
+</html>
