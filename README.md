@@ -23,6 +23,7 @@ Funciona no navegador, sem instalação, inclusive no iPad.
 | [Poder, Disciplina, Governamentalidade](foucault.html) | Michel Foucault | Micropoder, panóptico, biopoder, sujeito neoliberal |
 | [Poliarquia na Prática](poliarquia.html) | Robert Dahl — aplicação empírica | Diagnóstico democrático, comparação internacional |
 | [Autoridade, Legitimidade, Burocracia](weber.html) | Max Weber | Dominação, gaiola de ferro, ética da responsabilidade |
+| [Instituições Modernas e Poder Disciplinar](foucault-instituicoes.html) | Michel Foucault | Escola, Hospital, Prisão, Poder Disciplinar |
 
 ---
 
