@@ -43,6 +43,7 @@ Funciona no navegador, sem instalação, inclusive no iPad.
 politeia/
 ├── index.html                       ← hub principal
 ├── democracia-procedimental.html    ← Schumpeter & Dahl
+├── foucault-instituicoes.html       ← Foucault - Instituições
 ├── foucault.html                    ← Michel Foucault
 ├── poliarquia.html                  ← Dahl aplicado
 ├── weber.html                       ← Max Weber
