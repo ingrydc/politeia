@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rawls — Justiça como Equidade</title>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --bg:      #f7f6f2;
+  --bg2:     #efede7;
+  --bg3:     #e6e3db;
+  --ink:     #18181a;
+  --ink2:    #2a2a2e;
+  --muted:   #6b6b72;
+  --faint:   #a8a8b0;
+  --border:  #d4d2ca;
+  --border2: #bfbcb4;
+  --blue:    #2355a0;
+  --blue2:   #1a4080;
+  --sky:     #dce8f5;
+  --sidebar: 280px;
+
+  --spec:   'Spectral', serif;
+  --bar:    'Barlow', sans-serif;
+  --barc:   'Barlow Condensed', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+body { font-family: var(--spec); background: var(--bg); color: var(--ink2); display: flex; min-height: 100vh; }
+
+/* subtle grid texture */
+body::before {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    linear-gradient(rgba(35,85,160,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(35,85,160,0.025) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* ── SIDEBAR ── */
+#sidebar {
+  width: var(--sidebar);
+  position: fixed; top: 0; left: 0; height: 100vh;
+  background: var(--ink);
+  overflow-y: auto; z-index: 200;
+  display: flex; flex-direction: column;
+}
+
+.sb-brand { padding: 32px 26px 24px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.sb-eyebrow {
+  font-family: var(--barc); font-size: 0.58rem;
+  letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--blue); display: block; margin-bottom: 14px;
+}
+.sb-name {
+  font-family: var(--spec); font-size: 1.5rem; font-weight: 700;
+  color: #f0eff8; line-height: 1.15; letter-spacing: -0.02em;
+}
+.sb-name em { font-style: italic; color: rgba(240,239,248,0.6); }
+.sb-tagline {
+  font-family: var(--bar); font-size: 0.78rem; font-weight: 300;
+  color: rgba(240,239,248,0.4); margin-top: 8px; line-height: 1.55;
+}
+.sb-divider { height: 1px; background: linear-gradient(90deg, var(--blue), transparent); margin-top: 20px; }
+
+.nav-block { padding: 12px 0 6px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.nav-block-label {
+  font-family: var(--barc); font-size: 0.5rem; letter-spacing: 0.28em;
+  text-transform: uppercase; color: rgba(255,255,255,0.2);
+  padding: 0 26px 8px; display: block;
+}
+.nav-item {
+  display: block; padding: 7px 26px;
+  font-family: var(--spec); font-size: 0.86rem; font-style: italic;
+  color: rgba(240,239,248,0.38);
+  cursor: pointer; border-left: 2px solid transparent;
+  transition: all 0.15s; line-height: 1.4;
+}
+.nav-item:hover { color: rgba(240,239,248,0.72); background: rgba(255,255,255,0.02); }
+.nav-item.active {
+  color: #dce8f5; font-style: normal;
+  border-left-color: var(--blue);
+  background: rgba(35,85,160,0.1);
+}
+
+.hl-panel { padding: 18px 26px; }
+.hl-label {
+  font-family: var(--barc); font-size: 0.5rem; letter-spacing: 0.25em;
+  text-transform: uppercase; color: rgba(255,255,255,0.2);
+  display: block; margin-bottom: 10px;
+}
+.saved-empty { font-family: var(--barc); font-size: 0.62rem; color: rgba(255,255,255,0.22); letter-spacing: 0.04em; }
+.saved-item {
+  font-family: var(--spec); font-size: 0.8rem; border-radius: 2px;
+  padding: 8px 10px; margin-bottom: 6px; cursor: pointer;
+  line-height: 1.5; transition: opacity 0.15s;
+}
+.saved-item:hover { opacity: 0.75; }
+.saved-tag {
+  font-family: var(--barc); font-size: 0.5rem;
+  letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.55; margin-bottom: 3px;
+}
+.clear-btn {
+  font-family: var(--barc); font-size: 0.55rem; letter-spacing: 0.12em;
+  text-transform: uppercase; padding: 6px 10px; background: transparent;
+  border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.25);
+  cursor: pointer; width: 100%; margin-top: 8px; transition: all 0.15s;
+}
+.clear-btn:hover { border-color: var(--blue); color: var(--sky); }
+
+/* ── MAIN ── */
+#main { margin-left: var(--sidebar); flex: 1; position: relative; z-index: 1; }
+
+#progress { position: fixed; top: 0; left: var(--sidebar); right: 0; height: 3px; background: var(--bg3); z-index: 300; }
+#progress-fill { height: 100%; width: 0; background: var(--blue); transition: width 0.1s; }
+
+#topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(247,246,242,0.95); backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 56px; display: flex; justify-content: space-between; align-items: center;
+}
+.topbar-left { display: flex; align-items: center; gap: 16px; }
+.topbar-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); flex-shrink: 0; }
+#topbar-label { font-family: var(--barc); font-size: 0.62rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+#topbar-hint  { font-family: var(--barc); font-size: 0.58rem; color: var(--faint); letter-spacing: 0.06em; }
+
+#content { max-width: 720px; margin: 0 auto; padding: 64px 56px 120px; }
+
+/* ── BOOK OPENER ── */
+.book-opener { margin-bottom: 72px; }
+.opener-top {
+  display: grid; grid-template-columns: 1fr 180px;
+  gap: 32px; align-items: start;
+  padding-bottom: 28px;
+  border-bottom: 3px double var(--border);
+}
+.opener-eyebrow {
+  font-family: var(--barc); font-size: 0.6rem; letter-spacing: 0.28em;
+  text-transform: uppercase; color: var(--blue); display: block; margin-bottom: 14px;
+}
+.opener-title {
+  font-family: var(--spec); font-size: 3rem; font-weight: 700;
+  color: var(--ink); line-height: 1.05; letter-spacing: -0.025em;
+}
+.opener-title em { font-style: italic; color: var(--blue2); }
+.opener-sub {
+  font-family: var(--spec); font-size: 1rem; font-style: italic;
+  color: var(--muted); margin-top: 10px; line-height: 1.65;
+}
+.opener-meta { text-align: right; padding-top: 4px; }
+.opener-year {
+  font-family: var(--spec); font-size: 3.2rem; font-weight: 300;
+  color: var(--border2); line-height: 1; display: block; letter-spacing: -0.04em;
+}
+.opener-pub {
+  font-family: var(--barc); font-size: 0.58rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--faint); margin-top: 6px; display: block;
+}
+.opener-intro { margin-top: 28px; }
+.opener-intro p {
+  font-family: var(--spec); font-size: 1.08rem; line-height: 1.9;
+  color: var(--ink2); margin-bottom: 16px;
+}
+
+/* ── CHAPTER ── */
+.chapter { margin-bottom: 80px; }
+
+.ch-marker {
+  display: flex; align-items: stretch; gap: 0;
+  margin-bottom: 28px; padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+.ch-num {
+  font-family: var(--barc); font-size: 3.5rem; font-weight: 700;
+  color: var(--border); line-height: 1; letter-spacing: -0.04em;
+  padding-right: 20px; border-right: 2px solid var(--border);
+  flex-shrink: 0; align-self: center;
+}
+.ch-info { padding-left: 20px; display: flex; flex-direction: column; justify-content: center; }
+.ch-book-ref {
+  font-family: var(--barc); font-size: 0.55rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--blue); margin-bottom: 6px;
+}
+.ch-title {
+  font-family: var(--spec); font-size: 1.4rem; font-weight: 600;
+  color: var(--ink); line-height: 1.2; letter-spacing: -0.01em;
+}
+.ch-sub {
+  font-family: var(--spec); font-size: 0.88rem; font-style: italic;
+  color: var(--muted); margin-top: 4px;
+}
+
+/* body text */
+.text p {
+  font-family: var(--spec); font-size: 1.06rem; line-height: 1.9;
+  color: var(--ink2); margin-bottom: 18px; text-align: justify;
+}
+.text p:last-child { margin-bottom: 0; }
+.text strong { color: var(--ink); font-weight: 600; }
+.text em { font-style: italic; color: var(--blue2); }
+
+/* principles display */
+.principles { margin: 32px 0; display: flex; flex-direction: column; gap: 3px; }
+.principle-card {
+  display: grid; grid-template-columns: 64px 1fr;
+  background: var(--bg2); border: 1px solid var(--border);
+}
+.principle-card:first-child { border-bottom: none; }
+.p-num {
+  background: var(--blue); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--spec); font-size: 1.6rem; font-weight: 700; font-style: italic;
+}
+.p-body { padding: 20px 22px; }
+.p-label {
+  font-family: var(--barc); font-size: 0.56rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--blue); margin-bottom: 8px;
+}
+.p-title { font-family: var(--spec); font-size: 1rem; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
+.p-body p { font-family: var(--spec); font-size: 0.94rem; line-height: 1.72; color: var(--ink2); margin: 0; }
+
+/* veil diagram */
+.veil-diagram {
+  margin: 32px 0; background: var(--sky);
+  border: 1px solid #b8d0ec; padding: 32px 28px;
+  position: relative; overflow: hidden;
+}
+.veil-diagram::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--blue);
+}
+.veil-title {
+  font-family: var(--barc); font-size: 0.6rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--blue); margin-bottom: 20px;
+}
+.veil-cols { display: grid; grid-template-columns: 1fr 40px 1fr; gap: 0; align-items: start; }
+.veil-col-title {
+  font-family: var(--barc); font-size: 0.62rem; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--blue); margin-bottom: 10px;
+  padding-bottom: 8px; border-bottom: 1px solid #b8d0ec;
+}
+.veil-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.veil-list li {
+  font-family: var(--bar); font-size: 0.84rem; line-height: 1.55;
+  color: var(--ink2); display: flex; align-items: flex-start; gap: 8px;
+}
+.veil-list li::before { content: '–'; color: var(--blue); flex-shrink: 0; margin-top: 1px; }
+.veil-divider {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; color: var(--blue); opacity: 0.4; padding-top: 28px;
+}
+.veil-bottom {
+  margin-top: 20px; padding-top: 16px; border-top: 1px solid #b8d0ec;
+  font-family: var(--spec); font-size: 0.9rem; font-style: italic;
+  color: var(--blue2); text-align: center; line-height: 1.65;
+}
+
+/* callout */
+.callout {
+  margin: 28px 0; padding: 22px 26px;
+  border-left: 3px solid var(--blue); background: var(--bg2);
+  border-right: 1px solid var(--border); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+}
+.callout-label {
+  font-family: var(--barc); font-size: 0.54rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--blue); margin-bottom: 14px;
+}
+.callout ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.callout li { display: flex; gap: 12px; font-family: var(--spec); font-size: 0.95rem; line-height: 1.7; color: var(--ink2); }
+.callout li::before { content: '§'; color: var(--blue); flex-shrink: 0; font-family: var(--spec); font-size: 0.9em; margin-top: 1px; }
+.callout li strong { color: var(--ink); font-weight: 600; }
+
+blockquote {
+  margin: 28px 0; padding: 24px 28px;
+  border-left: 4px solid var(--blue); background: var(--sky);
+}
+blockquote p { font-family: var(--spec); font-size: 1.02rem; font-style: italic; line-height: 1.85; color: var(--ink2); }
+blockquote cite { font-family: var(--barc); font-size: 0.58rem; color: var(--muted); margin-top: 10px; display: block; letter-spacing: 0.08em; text-transform: uppercase; }
+
+/* overlapping circles for Rawls concepts */
+.concept-pair {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin: 28px 0;
+}
+.concept-card {
+  padding: 22px 20px; background: var(--bg2);
+  border: 1px solid var(--border);
+}
+.concept-label { font-family: var(--barc); font-size: 0.56rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--blue); margin-bottom: 8px; }
+.concept-title { font-family: var(--spec); font-size: 1rem; font-weight: 600; color: var(--ink); margin-bottom: 10px; line-height: 1.2; }
+.concept-body { font-family: var(--spec); font-size: 0.9rem; line-height: 1.7; color: var(--ink2); }
+
+/* comparison table */
+.table-wrap { overflow-x: auto; margin: 28px 0; }
+table { width: 100%; border-collapse: collapse; }
+th { font-family: var(--barc); font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase; padding: 12px 14px; text-align: left; background: var(--ink); color: rgba(240,239,248,0.85); border: none; }
+td { font-family: var(--spec); font-size: 0.93rem; padding: 11px 14px; border-bottom: 1px solid var(--border); color: var(--ink2); line-height: 1.55; vertical-align: top; }
+tr:nth-child(even) td { background: var(--bg2); }
+
+.divider { text-align: center; padding: 14px 0; margin: 12px 0; position: relative; }
+.divider::before { content: ''; position: absolute; left:0; right:0; top:50%; height:1px; background: var(--border); }
+.divider span { font-family: var(--barc); font-size: 0.52rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--faint); background: var(--bg); padding: 0 20px; position: relative; }
+
+/* ── FLOATING MENU ── */
+#hl-menu {
+  position: absolute; display: none; z-index: 9999;
+  background: var(--ink); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 3px; padding: 9px 14px;
+  align-items: center; gap: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  user-select: none;
+}
+#hl-menu::after {
+  content: ''; position: absolute; bottom: -7px; left: 50%; transform: translateX(-50%);
+  border-left: 7px solid transparent; border-right: 7px solid transparent;
+  border-top: 7px solid var(--ink);
+}
+.hm-label { font-family: var(--barc); font-size: 0.52rem; color: rgba(255,255,255,0.3); white-space: nowrap; letter-spacing: 0.12em; text-transform: uppercase; }
+.hm-cor { width: 22px; height: 22px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.12); cursor: pointer; transition: transform 0.12s; flex-shrink: 0; }
+.hm-cor:hover { transform: scale(1.18); }
+.hm-fechar { background: none; border: none; color: rgba(255,255,255,0.3); font-size: 0.75rem; cursor: pointer; padding: 2px 4px; font-family: var(--barc); transition: color 0.12s; }
+.hm-fechar:hover { color: #fff; }
+
+@media (max-width: 860px) {
+  #sidebar { position: relative; width: 100%; height: auto; }
+  body { flex-direction: column; }
+  #main { margin-left: 0; }
+  #progress { left: 0; }
+  #content, #topbar { padding-left: 24px; padding-right: 24px; }
+  .opener-top, .veil-cols, .concept-pair { grid-template-columns: 1fr; }
+  .veil-divider { display: none; }
+  .opener-meta { text-align: left; }
+}
+</style>
+</head>
+<body>
+
+<div id="hl-menu">
+  <span class="hm-label">Sublinhar</span>
+  <button class="hm-cor" data-c="b" style="background:#2355a0" title="Azul"></button>
+  <button class="hm-cor" data-c="s" style="background:#4a8a72" title="Verde"></button>
+  <button class="hm-cor" data-c="y" style="background:#b8962a" title="Âmbar"></button>
+  <button class="hm-cor" data-c="r" style="background:#a04040" title="Vermelho"></button>
+  <button class="hm-fechar" id="hm-fechar">✕</button>
+</div>
+
+<aside id="sidebar">
+  <div class="sb-brand">
+    <span class="sb-eyebrow">Filosofia Política · Liberalismo</span>
+    <div class="sb-name">John Rawls<br><em>Justiça como Equidade</em></div>
+    <div class="sb-tagline">Uma Teoria da Justiça · Liberalismo Político</div>
+    <div class="sb-divider"></div>
+  </div>
+
+  <div class="nav-block">
+    <span class="nav-block-label">Uma Teoria da Justiça</span>
+    <span class="nav-item" data-target="tj-intro">Cap. 1 — O papel da teoria</span>
+    <span class="nav-item" data-target="tj-posicao">Cap. 2 — A posição original</span>
+    <span class="nav-item" data-target="tj-veu">O véu da ignorância</span>
+    <span class="nav-item" data-target="tj-principios">Cap. 3 — Os dois princípios</span>
+    <span class="nav-item" data-target="tj-maximin">A regra maximin</span>
+  </div>
+
+  <div class="nav-block">
+    <span class="nav-block-label">Liberalismo Político</span>
+    <span class="nav-item" data-target="lp-intro">Conferência I — A revisão</span>
+    <span class="nav-item" data-target="lp-pluralismo">Pluralismo razoável</span>
+    <span class="nav-item" data-target="lp-sobreposicao">Consenso por sobreposição</span>
+    <span class="nav-item" data-target="lp-razao">Razão pública</span>
+  </div>
+
+  <div class="nav-block">
+    <span class="nav-block-label">Síntese</span>
+    <span class="nav-item" data-target="sintese">Comparação e críticas</span>
+  </div>
+
+  <div class="hl-panel">
+    <span class="hl-label">Anotações</span>
+    <div id="saved-list"><span class="saved-empty">selecione texto para sublinhar</span></div>
+    <button class="clear-btn" id="clear-btn">limpar todas</button>
+  </div>
+</aside>
+
+<main id="main">
+  <div id="progress"><div id="progress-fill"></div></div>
+  <div id="topbar">
+    <div class="topbar-left">
+      <div class="topbar-dot"></div>
+      <span id="topbar-label">Rawls — Justiça como Equidade</span>
+    </div>
+    <span id="topbar-hint">selecione texto para sublinhar</span>
+  </div>
+
+  <div id="content">
+
+    <!-- ══ ABERTURA ══ -->
+    <div class="book-opener">
+      <div class="opener-top">
+        <div>
+          <span class="opener-eyebrow">Filosofia Política · Liberalismo Igualitário</span>
+          <div class="opener-title">Justiça como <em>Equidade</em></div>
+          <div class="opener-sub">A teoria política mais influente do século XX — e sua revisão liberal vinte anos depois</div>
+        </div>
+        <div class="opener-meta">
+          <span class="opener-year">1971</span>
+          <span class="opener-pub">Harvard University Press</span>
+        </div>
+      </div>
+      <div class="opener-intro">
+        <p>John Rawls publicou <em>Uma Teoria da Justiça</em> em 1971 e reconfigurou o debate filosófico-político do século XX. Em um campo dominado pelo utilitarismo — a ideia de que a melhor política é aquela que maximiza o bem-estar total — Rawls apresentou uma alternativa kantiana: a justiça como um conjunto de princípios que pessoas racionais e livres <strong>escolheriam</strong> se não soubessem qual lugar ocupariam na sociedade.</p>
+        <p>O livro é uma obra de filosofia moral e política construída com rigor analítico invulgar. Cada conceito é definido com precisão, cada argumento é encadeado logicamente. O resultado é uma arquitetura teórica que, em seus fundamentos, responde a uma questão elementar: <strong>o que devemos uns aos outros?</strong></p>
+        <p>Vinte anos depois, Rawls lançou <em>Liberalismo Político</em> (1993) — uma revisão significativa. O livro reconhece um problema que a teoria original ignorava: sociedades democráticas modernas são marcadas pelo <em>pluralismo razoável</em>, a coexistência permanente de doutrinas religiosas, morais e filosóficas incompatíveis. Como construir princípios de justiça sem pressupor uma única visão de mundo?</p>
+      </div>
+    </div>
+
+    <!-- ══ CAP 1 ══ -->
+    <section id="tj-intro" class="chapter">
+      <div class="ch-marker">
+        <div class="ch-num">01</div>
+        <div class="ch-info">
+          <div class="ch-book-ref">Uma Teoria da Justiça · Cap. 1</div>
+          <div class="ch-title">O papel da teoria da justiça</div>
+          <div class="ch-sub">Por que precisamos de princípios — e por que o utilitarismo não basta</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>Rawls abre o livro com uma das frases mais citadas da filosofia política do século XX: <strong>"A justiça é a virtude primeira das instituições sociais, assim como a verdade o é dos sistemas de pensamento."</strong> Com isso, ele estabelece imediatamente o campo: não está falando da virtude de indivíduos, mas da estrutura básica da sociedade — as instituições que distribuem direitos, deveres, riqueza e oportunidades.</p>
+        <p>O argumento do primeiro capítulo é sobretudo crítico: o utilitarismo, teoria dominante na filosofia moral anglófona, não oferece uma base satisfatória para a justiça. O utilitarismo diz: maximize a soma total de bem-estar (felicidade, preferências satisfeitas, utilidade). O problema é que essa maximização pode, em princípio, justificar a opressão de uma minoria se isso aumentar suficientemente o bem-estar da maioria.</p>
+      </div>
+      <div class="callout">
+        <div class="callout-label">§ A crítica rawlsiana ao utilitarismo</div>
+        <ul>
+          <li><strong>O problema da agregação:</strong> O utilitarismo trata a sociedade como se fosse um único indivíduo — soma os bem-estares e maximiza o total. Mas indivíduos diferentes não podem simplesmente "compensar" uns aos outros. Minha felicidade não compensa sua dor.</li>
+          <li><strong>Direitos como barreiras:</strong> Para Rawls, há coisas que não podem ser feitas com pessoas independentemente do ganho agregado. Direitos individuais não são apenas instrumentos de utilidade — são restrições ao que pode ser sacrificado em nome do bem comum.</li>
+          <li><strong>A intuição da separação das pessoas:</strong> Cada pessoa tem uma vida própria, não fungível com as outras. A teoria da justiça deve levar a sério esse fato elementar.</li>
+        </ul>
+      </div>
+      <div class="text">
+        <p>A alternativa de Rawls se inspira no contratualismo — a tradição de Locke, Rousseau e Kant que funda a legitimidade política no consentimento racional. Mas Rawls dá ao contratualismo uma formulação nova e mais precisa: o que importa não é um contrato histórico, mas os princípios que <em>pessoas racionais escolheriam</em> em condições hipotéticas bem definidas — a <strong>posição original</strong>.</p>
+      </div>
+      <blockquote>
+        <p>A justiça é a virtude primeira das instituições sociais, assim como a verdade o é dos sistemas de pensamento. Uma teoria, por mais elegante e econômica que seja, deve ser rejeitada ou revisada se for falsa; da mesma forma, leis e instituições, por mais eficientes e bem ordenadas que sejam, devem ser reformadas ou abolidas se forem injustas.</p>
+        <cite>— Rawls, Uma Teoria da Justiça, 1971</cite>
+      </blockquote>
+    </section>
+
+    <!-- ══ CAP 2 — POSIÇÃO ORIGINAL ══ -->
+    <section id="tj-posicao" class="chapter">
+      <div class="ch-marker">
+        <div class="ch-num">02</div>
+        <div class="ch-info">
+          <div class="ch-book-ref">Uma Teoria da Justiça · Cap. 2</div>
+          <div class="ch-title">A posição original</div>
+          <div class="ch-sub">O dispositivo filosófico que elimina o interesse próprio da escolha dos princípios</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>A posição original é um experimento mental, não um evento histórico. Rawls pede que imaginemos um grupo de pessoas que devem escolher os princípios fundamentais que vão reger a sociedade em que viverão. Até aqui é contratualismo clássico. A novidade de Rawls é uma restrição radical às informações disponíveis a esses escolhedores: o <strong>véu da ignorância</strong>.</p>
+        <p>A posição original é projetada para garantir imparcialidade. Se não sei qual lugar vou ocupar na sociedade, não posso escolher princípios que favoreçam meu grupo, minha classe, minha raça ou minha geração. Sou forçado a escolher como se pudesse estar em qualquer posição — e portanto escolho de forma genuinamente equitativa. <em>Justiça como equidade</em> significa que os princípios de justiça são aqueles que resultam de uma situação de escolha que é ela mesma equitativa.</p>
+      </div>
+    </section>
+
+    <section id="tj-veu" class="chapter">
+      <div class="ch-marker">
+        <div class="ch-num">02<span style="font-size:1.5rem">.b</span></div>
+        <div class="ch-info">
+          <div class="ch-book-ref">Conceito Central</div>
+          <div class="ch-title">O véu da ignorância</div>
+          <div class="ch-sub">O que os escolhedores sabem e o que não sabem na posição original</div>
+        </div>
+      </div>
+
+      <div class="veil-diagram">
+        <div class="veil-title">// Assimetria de informação na posição original</div>
+        <div class="veil-cols">
+          <div>
+            <div class="veil-col-title">Não sabem</div>
+            <ul class="veil-list">
+              <li>Seu lugar na estrutura social (classe, status)</li>
+              <li>Sua sorte na distribuição de talentos e capacidades naturais</li>
+              <li>Sua concepção de bem — objetivos, valores, projetos de vida</li>
+              <li>Os traços especiais de sua psicologia — tolerância ao risco, inveja, ambição</li>
+              <li>A geração à qual pertencem</li>
+              <li>Sua raça, etnia, gênero, religião</li>
+            </ul>
+          </div>
+          <div class="veil-divider">|</div>
+          <div>
+            <div class="veil-col-title">Sabem</div>
+            <ul class="veil-list">
+              <li>Que sua sociedade está sujeita às circunstâncias da justiça (recursos escassos, interesses conflitantes)</li>
+              <li>Princípios gerais de economia, psicologia e ciência política</li>
+              <li>Que querem mais bens primários a menos — seja qual for seu projeto de vida</li>
+              <li>As bases gerais da teoria moral e da escolha racional</li>
+            </ul>
+          </div>
+        </div>
+        <div class="veil-bottom">
+          O véu não cria pessoas desprovidas de razão — cria pessoas que raciocinam<br>sem o viés do interesse próprio. É a imparcialidade como procedimento.
+        </div>
+      </div>
+
+      <div class="text">
+        <p>O conceito de <strong>bens primários</strong> é essencial aqui. Como os escolhedores não sabem quais são seus objetivos específicos, precisam de um padrão que faça sentido para qualquer plano de vida razoável. Rawls propõe os bens primários: liberdades básicas, oportunidades, renda e riqueza, e as bases sociais do autorrespeito. Qualquer pessoa racional quereria mais desses bens, independentemente de seu projeto particular de vida.</p>
+        <p>A posição original não é uma descrição psicológica — não afirma que pessoas de fato raciocinam assim. É um <strong>dispositivo de representação</strong>: nos ajuda a pensar com clareza sobre o que seria justo ao eliminar artificialmente os fatores que normalmente distorcem o julgamento moral — meu interesse, meu grupo, minha história particular.</p>
+      </div>
+    </section>
+
+    <!-- ══ CAP 3 — DOIS PRINCÍPIOS ══ -->
+    <section id="tj-principios" class="chapter">
+      <div class="ch-marker">
+        <div class="ch-num">03</div>
+        <div class="ch-info">
+          <div class="ch-book-ref">Uma Teoria da Justiça · Cap. 3</div>
+          <div class="ch-title">Os dois princípios de justiça</div>
+          <div class="ch-sub">O que pessoas racionais escolheriam atrás do véu da ignorância</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>Rawls argumenta que pessoas na posição original — racionais, desinteressadas, com conhecimento geral mas sem informação sobre si mesmas — escolheriam <strong>dois princípios</strong>, em ordem de prioridade. O primeiro tem precedência sobre o segundo; dentro do segundo, a primeira parte tem precedência sobre a segunda.</p>
+      </div>
+
+      <div class="principles">
+        <div class="principle-card">
+          <div class="p-num">1</div>
+          <div class="p-body">
+            <div class="p-label">Princípio das Liberdades Básicas</div>
+            <div class="p-title">Igual liberdade para todos</div>
+            <p>Cada pessoa deve ter um sistema igual e mais extenso possível de liberdades básicas compatível com um sistema similar de liberdades para todos. Liberdades políticas, de consciência, de pensamento, de pessoa, de propriedade pessoal e proteção contra prisão arbitrária são inegociáveis — não podem ser sacrificadas por nenhum ganho econômico ou social.</p>
+          </div>
+        </div>
+        <div class="principle-card">
+          <div class="p-num">2</div>
+          <div class="p-body">
+            <div class="p-label">Princípio da Diferença + Igualdade de Oportunidades</div>
+            <div class="p-title">Desigualdades apenas quando beneficiam os mais desfavorecidos</div>
+            <p>As desigualdades sociais e econômicas devem satisfazer duas condições: <strong>(a)</strong> estar ligadas a posições e cargos abertos a todos em condições de justa igualdade de oportunidades; e <strong>(b)</strong> ser para o maior benefício dos membros menos favorecidos da sociedade — o chamado Princípio da Diferença.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="text">
+        <p>O <strong>Princípio da Diferença</strong> é a contribuição mais original e controvertida de Rawls. Ele não exige igualdade absoluta — exige que as desigualdades existentes beneficiem os piores situados. Se uma desigualdade — por exemplo, remunerações maiores para médicos especialistas — produz um sistema de saúde melhor que também atende os mais pobres, ela é justificada. Se serve apenas para enriquecer os já ricos sem nenhum benefício aos desfavorecidos, não é.</p>
+        <p>A lógica é: atrás do véu da ignorância, sabendo que posso estar na pior posição, racionalmente preferiria uma sociedade que maximiza o bem-estar do menos favorecido — pois pode ser exatamente o grupo ao qual pertenço. Rawls chama esse raciocínio de <strong>regra maximin</strong>: maximize o mínimo. Escolha a alternativa cujo pior resultado possível é o melhor entre todos os piores resultados possíveis.</p>
+      </div>
+
+      <blockquote>
+        <p>Todos os valores sociais — liberdade e oportunidade, renda e riqueza, e as bases sociais do autorrespeito — devem ser distribuídos igualmente a não ser que uma distribuição desigual de um ou de todos esses valores seja vantajosa para todos.</p>
+        <cite>— Rawls, Uma Teoria da Justiça, 1971</cite>
+      </blockquote>
+    </section>
+
+    <section id="tj-maximin" class="chapter">
+      <div class="ch-marker">
+        <div class="ch-num">03<span style="font-size:1.5rem">.b</span></div>
+        <div class="ch-info">
+          <div class="ch-book-ref">Conceito Central</div>
+          <div class="ch-title">A regra maximin e suas implicações</div>
+          <div class="ch-sub">Por que escolhedores racionais escolheriam os princípios rawlsianos</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>Por que escolher o maximin em vez de maximizar a utilidade esperada, como sugere a teoria da decisão racional? Rawls oferece três razões: (1) o véu da ignorância não permite calcular probabilidades — não sabemos qual posição é mais provável; (2) as apostas são altas demais — escolhemos a estrutura básica que vai definir nossas vidas inteiras; (3) os piores resultados possíveis do utilitarismo são intoleráveis — a possibilidade de acabar em uma minoria oprimida para benefício da maioria é algo que um racionalmente avesso ao risco rejeitaria.</p>
+      </div>
+      <div class="concept-pair">
+        <div class="concept-card">
+          <div class="concept-label">Maximin Rawlsiano</div>
+          <div class="concept-title">Maximize o mínimo</div>
+          <div class="concept-body">Escolha a distribuição cujo pior resultado é o melhor possível. Foca nos menos favorecidos porque, atrás do véu, pode ser exatamente onde você está. Aceita desigualdades que melhoram a situação dos piores — rejeita as que não os beneficiam.</div>
+        </div>
+        <div class="concept-card">
+          <div class="concept-label">Utilitarismo clássico</div>
+          <div class="concept-title">Maximize a soma total</div>
+          <div class="concept-body">Escolha a distribuição que maximiza a soma de bem-estar de todos. Aceita que os piores situados fiquem ainda piores se isso aumentar suficientemente o total. Os direitos individuais podem ser sacrificados pelo ganho agregado da maioria.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-label">§ Implicações práticas do Princípio da Diferença</div>
+        <ul>
+          <li><strong>Tributação progressiva:</strong> É justificada não como punição à riqueza, mas como instrumento para melhorar a situação dos menos favorecidos — desde que não reduza tanto os incentivos que prejudique a todos, inclusive os piores situados.</li>
+          <li><strong>Educação pública de qualidade:</strong> A igualdade de oportunidades exige que talentos naturais não sejam desperdiçados por acidente de nascimento. Investir na educação dos mais pobres é exigência de justiça, não caridade.</li>
+          <li><strong>Sistemas universais de saúde:</strong> A saúde é base do exercício de qualquer plano de vida — sua distribuição deve priorizar os mais vulneráveis.</li>
+          <li><strong>Não-meritocracia pura:</strong> Rawls rejeita a ideia de que talentos naturais justificam desigualdades ilimitadas — talentos são resultado de loteria genética e social, não mérito individual puro.</li>
+        </ul>
+      </div>
+    </section>
+
+    <div class="divider"><span>liberalismo político · 1993</span></div>
+
+    <!-- ══ LIBERALISMO POLÍTICO ══ -->
+    <section id="lp-intro" class="chapter">
+      <div class="ch-marker">
+        <div class="ch-num">LP</div>
+        <div class="ch-info">
+          <div class="ch-book-ref">Liberalismo Político · Conferência I</div>
+          <div class="ch-title">A revisão — por que Rawls voltou ao problema</div>
+          <div class="ch-sub">O problema do pluralismo que a teoria original não resolveu</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>Em 1993, Rawls publicou <em>Liberalismo Político</em> e reconheceu um problema sério em <em>Uma Teoria da Justiça</em>: o livro pressupunha que todos os cidadãos compartilhavam uma doutrina moral abrangente — a concepção kantiana de pessoa como ser racional e autônomo. Mas democracias liberais são marcadas pelo <strong>pluralismo razoável</strong>: cidadãos têm crenças religiosas, morais e filosóficas profundamente diferentes, e esse fato é permanente, não um defeito a ser corrigido.</p>
+        <p>Como, então, construir princípios de justiça que pessoas com visões de mundo radicalmente distintas — cristãos, muçulmanos, ateus, libertários, comunitaristas — possam aceitar? Pedir que todos adotem uma doutrina kantiana de autonomia é impor uma visão particular de bem em nome da justiça — contradição performativa no núcleo do liberalismo.</p>
+        <p>A resposta de Rawls no <em>Liberalismo Político</em> é restringir o campo: a teoria da justiça deve ser <strong>política, não metafísica</strong>. Não precisa ser verdade do ponto de vista de nenhuma doutrina abrangente particular — precisa apenas ser aceitável para pessoas com doutrinas razoavelmente diferentes. A justiça como equidade é reformulada como uma concepção <em>freestanding</em> — que não depende de nenhuma fundação filosófica ou religiosa específica.</p>
+      </div>
+    </section>
+
+    <section id="lp-pluralismo" class="chapter">
+      <div class="ch-marker">
+        <div class="ch-num">LP<span style="font-size:1.5rem">.2</span></div>
+        <div class="ch-info">
+          <div class="ch-book-ref">Liberalismo Político</div>
+          <div class="ch-title">Pluralismo razoável</div>
+          <div class="ch-sub">Por que o desacordo entre visões de mundo é permanente e legítimo</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>Rawls distingue o pluralismo razoável do pluralismo tout court. Há doutrinas que são simplesmente falsas, irracionais ou intolerantes — e não merecem accommodação. Mas há um conjunto vasto de doutrinas religiosas, morais e filosóficas que são <em>razoáveis</em>: internamente coerentes, dispostas ao diálogo, capazes de reconhecer a razoabilidade das doutrinas concorrentes, mesmo discordando delas.</p>
+        <p>O pluralismo razoável é o <strong>resultado natural do uso livre da razão humana</strong> — não um defeito que uma educação melhor ou uma política pública correta poderiam eliminar. Pessoas racionais e de boa-fé, refletindo sobre questões morais, religiosas e filosóficas com liberdade, chegarão a conclusões diferentes. Esse é o "fardo dos julgamentos" (<em>burdens of judgment</em>): as fontes de desacordo razoável são ineliminávveis.</p>
+      </div>
+      <div class="callout">
+        <div class="callout-label">§ Os fardos dos julgamentos — fontes do desacordo razoável</div>
+        <ul>
+          <li><strong>Evidências complexas e conflitantes:</strong> As provas empíricas relevantes para questões morais são frequentemente difíceis de avaliar — pessoas razoáveis as ponderarão diferentemente.</li>
+          <li><strong>Peso relativo das considerações:</strong> Mesmo que concordem nos valores relevantes, pessoas razoáveis podem discordar sobre como ponderá-los quando conflitam — liberdade vs. igualdade, autonomia vs. comunidade.</li>
+          <li><strong>Conceitos essencialmente contestados:</strong> Muitos conceitos — justiça, igualdade, liberdade — são inerentemente vagos e seu conteúdo depende de interpretação.</li>
+          <li><strong>Formação pela experiência:</strong> A experiência de vida de cada um molda seus valores de formas que não são totalmente racionalizáveis — e essa diversidade de experiências é ineliminável.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="lp-sobreposicao" class="chapter">
+      <div class="ch-marker">
+        <div class="ch-num">LP<span style="font-size:1.5rem">.3</span></div>
+        <div class="ch-info">
+          <div class="ch-book-ref">Liberalismo Político</div>
+          <div class="ch-title">Consenso por sobreposição</div>
+          <div class="ch-sub">Como doutrinas incompatíveis podem sustentar princípios de justiça comuns</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>O <strong>consenso por sobreposição</strong> (<em>overlapping consensus</em>) é a resposta de Rawls ao problema da estabilidade. Como uma sociedade pluralista pode ser estável ao longo do tempo se seus cidadãos têm visões de mundo incompatíveis?</p>
+        <p>A ideia é que diferentes doutrinas razoáveis — cada uma a partir de suas próprias premissas e tradições — podem convergir num mesmo conjunto de princípios políticos de justiça, ainda que por razões diferentes. Um cristão pode aceitar a liberdade de consciência porque sua fé considera o consentimento livre condição da autêntica crença religiosa. Um liberal secular pode aceitar os mesmos princípios por razões de autonomia e dignidade. Um communitarista pode aceitá-los por razões de pertencimento e coesão social.</p>
+      </div>
+      <div class="veil-diagram" style="background:#f0f5ee; border-color:#a8c4a8;">
+        <div class="veil-title" style="color:#3a6644">// Estrutura do consenso por sobreposição</div>
+        <div class="veil-cols">
+          <div>
+            <div class="veil-col-title" style="color:#3a6644; border-color:#a8c4a8">Doutrinas abrangentes diferentes</div>
+            <ul class="veil-list">
+              <li>Tradição cristã: dignidade da pessoa criada à imagem de Deus</li>
+              <li>Liberalismo filosófico: autonomia e razão como valores centrais</li>
+              <li>Igualitarismo secular: igual valor moral de todas as pessoas</li>
+              <li>Tradições comunitaristas: vínculos sociais como fundamento do bem</li>
+            </ul>
+          </div>
+          <div class="veil-divider" style="color:#3a6644">↓</div>
+          <div>
+            <div class="veil-col-title" style="color:#3a6644; border-color:#a8c4a8">Convergem nos princípios políticos</div>
+            <ul class="veil-list">
+              <li>Liberdades básicas iguais para todos</li>
+              <li>Justa igualdade de oportunidades</li>
+              <li>Princípio da diferença (benefício aos menos favorecidos)</li>
+              <li>Razão pública como forma de justificação política</li>
+            </ul>
+          </div>
+        </div>
+        <div class="veil-bottom" style="border-color:#a8c4a8; color:#3a6644">
+          A sobreposição não exige acordo sobre fundamentos — apenas acordo sobre princípios.<br>Cada doutrina chega aos mesmos princípios por seu próprio caminho.
+        </div>
+      </div>
+    </section>
+
+    <section id="lp-razao" class="chapter">
+      <div class="ch-marker">
+        <div class="ch-num">LP<span style="font-size:1.5rem">.4</span></div>
+        <div class="ch-info">
+          <div class="ch-book-ref">Liberalismo Político</div>
+          <div class="ch-title">Razão pública</div>
+          <div class="ch-sub">O que cidadãos devem uns aos outros quando justificam o poder coercitivo</div>
+        </div>
+      </div>
+      <div class="text">
+        <p>A <strong>razão pública</strong> é talvez o conceito mais influente do <em>Liberalismo Político</em> no debate político contemporâneo. A ideia é simples mas exigente: quando cidadãos ou funcionários públicos debatem questões fundamentais de justiça — direitos básicos, princípios constitucionais, questões de política que afetam os fundamentos da sociedade — devem oferecer razões que pessoas com diferentes visões de mundo possam aceitar como razoáveis.</p>
+        <p>Não é proibido ter razões religiosas ou filosóficas particulares para suas posições políticas. Mas quando se argumenta <em>publicamente</em> para justificar o uso do poder coercitivo do Estado sobre os concidadãos, a doutrina da razão pública exige que se ofereçam também razões públicas — acessíveis a qualquer pessoa razoável, independentemente de sua doutrina abrangente.</p>
+      </div>
+      <div class="callout">
+        <div class="callout-label">§ Razão pública — casos concretos</div>
+        <ul>
+          <li><strong>Aborto:</strong> Um legislador pode ter convicções religiosas sobre o início da vida, mas para justificar legislação restritiva no âmbito público deve apresentar razões que não dependam da aceitação de uma doutrina teológica específica — razões que um ateu possa avaliar por seus próprios critérios.</li>
+          <li><strong>Casamento igualitário:</strong> A oposição baseada exclusivamente em preceitos religiosos não satisfaz a razão pública — porque não oferece razões acessíveis a cidadãos de outras fés ou sem fé. Razões sobre bem-estar das crianças, estrutura social ou outras considerações substantivas são de razão pública.</li>
+          <li><strong>Educação:</strong> O currículo escolar público deve ser justificável a todos os pais, independentemente de sua religião — não pode impor uma doutrina moral ou religiosa específica como verdade.</li>
+        </ul>
+      </div>
+      <blockquote>
+        <p>Nossa obrigação é de civilidade: podemos votar de acordo com nossas convicções mais profundas quanto a questões políticas fundamentais — mas devemos estar preparados para dar razões públicas às nossas posições, razões que possamos razoavelmente esperar que outros cidadãos possam aceitar como razões, mesmo discordando de nossas conclusões.</p>
+        <cite>— Rawls, Liberalismo Político, 1993 (paráfrase)</cite>
+      </blockquote>
+    </section>
+
+    <div class="divider"><span>síntese</span></div>
+
+    <!-- SÍNTESE -->
+    <section id="sintese" class="chapter">
+      <div class="ch-marker">
+        <div class="ch-num">∑</div>
+        <div class="ch-info">
+          <div class="ch-book-ref">Síntese comparativa</div>
+          <div class="ch-title">Os dois Rawls — e as críticas principais</div>
+          <div class="ch-sub">Da teoria moral abrangente à concepção política freestanding</div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Dimensão</th>
+              <th>Uma Teoria da Justiça (1971)</th>
+              <th>Liberalismo Político (1993)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Fundamento</strong></td><td>Doutrina moral kantiana abrangente</td><td>Concepção política independente (freestanding)</td></tr>
+            <tr><td><strong>Ponto de partida</strong></td><td>Posição original + véu da ignorância</td><td>Ideias intuitivas compartilhadas da cultura democrática</td></tr>
+            <tr><td><strong>Estabilidade</strong></td><td>Congruência entre justiça e bem individual</td><td>Consenso por sobreposição de doutrinas razoáveis</td></tr>
+            <tr><td><strong>Pluralismo</strong></td><td>Problema a ser superado</td><td>Fato permanente a ser acomodado</td></tr>
+            <tr><td><strong>Justificação pública</strong></td><td>Razão prática kantiana</td><td>Razão pública democrática</td></tr>
+            <tr><td><strong>Alcance</strong></td><td>Teoria moral geral</td><td>Apenas a estrutura básica da sociedade</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="text">
+        <p><strong>Principais críticas a Rawls:</strong></p>
+        <p><em>Comunitaristas</em> (Sandel, MacIntyre, Taylor) criticam a concepção rawlsiana de pessoa como "eu desencarnado" — abstraído de suas comunidades, tradições e identidades. Para eles, não existe esse sujeito pré-social que escolhe atrás do véu: somos sempre já constituídos por vínculos comunitários que não escolhemos. A posição original pressupõe uma antropologia liberal específica que não é neutra.</p>
+        <p><em>Libertários</em> (Nozick) rejeitam o Princípio da Diferença: não temos deveres de justiça de transferir recursos para os menos favorecidos. Se uma distribuição resulta de trocas livres entre pessoas com direitos respeitados, ela é justa — independentemente de favorecer ou não os piores situados. A tributação redistributiva é, para Nozick, trabalho forçado.</p>
+        <p><em>Feministas</em> (Okin) apontam que Rawls analisa a estrutura básica da sociedade mas deixa a família fora do alcance dos princípios de justiça — reproduzindo assim desigualdades de gênero que se originam na esfera doméstica e se projetam na esfera pública.</p>
+        <p><em>Cosmopolitas</em> (Pogge, Beitz) argumentam que os princípios de Rawls deveriam se aplicar globalmente — não apenas dentro de sociedades nacionais. Se a posição original é válida, por que não incluir atrás do véu a incerteza sobre qual nação se nasceu?</p>
+      </div>
+      <blockquote>
+        <p>O que a justiça como equidade exige é que as desigualdades sejam justificadas para todos — inclusive e especialmente para aqueles que estão em posição desvantajosa. Nenhuma outra justificação serve à exigência básica de respeito recíproco entre cidadãos livres e iguais.</p>
+        <cite>— Rawls, Justiça como Equidade: uma reformulação, 2001</cite>
+      </blockquote>
+    </section>
+
+  </div>
+</main>
+
+<script>
+(function() {
+  'use strict';
+
+  window.addEventListener('scroll', function() {
+    var d = document.documentElement;
+    var s = d.scrollTop || document.body.scrollTop;
+    var h = d.scrollHeight - d.clientHeight;
+    document.getElementById('progress-fill').style.width = (h > 0 ? s/h*100 : 0) + '%';
+    marcarAtivo();
+  });
+
+  document.querySelectorAll('.nav-item').forEach(function(el) {
+    el.addEventListener('click', function() {
+      var alvo = document.getElementById(this.getAttribute('data-target'));
+      if (alvo) alvo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  function marcarAtivo() {
+    var secs = document.querySelectorAll('.chapter, .book-opener');
+    var ativaId = null;
+    secs.forEach(function(s) { if (s.getBoundingClientRect().top < 120) ativaId = s.id; });
+    document.querySelectorAll('.nav-item').forEach(function(l) {
+      l.classList.toggle('active', l.getAttribute('data-target') === ativaId);
+    });
+  }
+
+  var CORES     = { b:'#2355a0', s:'#3a6a54', y:'#b8962a', r:'#a04040' };
+  var CORES_TXT = { b:'#e8eef8', s:'#e8f4ee', y:'#1c1608', r:'#f8e8e8' };
+  var destaques = [], proxId = 1, rangeAtual = null;
+  var menu = document.getElementById('hl-menu');
+
+  function fecharMenu() { menu.style.display = 'none'; rangeAtual = null; }
+
+  menu.addEventListener('mousedown', function(e) { e.preventDefault(); });
+  menu.addEventListener('touchstart', function(e) { e.stopPropagation(); }, { passive: true });
+  document.getElementById('hm-fechar').addEventListener('click', function() { fecharMenu(); window.getSelection().removeAllRanges(); });
+
+  menu.querySelectorAll('.hm-cor').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var cor = this.getAttribute('data-c');
+      if (rangeAtual) aplicar(rangeAtual, cor);
+      fecharMenu(); window.getSelection().removeAllRanges();
+    });
+    btn.addEventListener('touchend', function(e) {
+      e.preventDefault(); e.stopPropagation();
+      var cor = this.getAttribute('data-c');
+      if (rangeAtual) aplicar(rangeAtual, cor);
+      fecharMenu(); window.getSelection().removeAllRanges();
+    });
+  });
+
+  function mostrarMenu(e) {
+    var isToque = e && e.type === 'touchend';
+    setTimeout(function() {
+      var sel = window.getSelection();
+      if (!sel || sel.isCollapsed || sel.rangeCount === 0) return;
+      if (sel.toString().trim().length < 1) return;
+      var range = sel.getRangeAt(0);
+      rangeAtual = range.cloneRange();
+      var rect = range.getBoundingClientRect();
+      var sx = window.pageXOffset || document.documentElement.scrollLeft;
+      var sy = window.pageYOffset || document.documentElement.scrollTop;
+      menu.style.left = Math.max(8, rect.left + sx + rect.width/2 - 130) + 'px';
+      menu.style.top  = Math.max(8, rect.top  + sy - 56) + 'px';
+      menu.style.display = 'flex';
+    }, isToque ? 100 : 20);
+  }
+
+  document.getElementById('content').addEventListener('mouseup', mostrarMenu);
+  document.getElementById('content').addEventListener('touchend', mostrarMenu);
+  document.addEventListener('mousedown', function(e) { if (!menu.contains(e.target)) fecharMenu(); });
+  document.addEventListener('touchstart', function(e) { if (!menu.contains(e.target)) setTimeout(function(){ fecharMenu(); }, 50); }, { passive: true });
+
+  function aplicar(range, cor) {
+    var id = proxId++;
+    var texto = range.toString().trim();
+    var anc = range.commonAncestorContainer;
+    var el = anc.nodeType === 3 ? anc.parentElement : anc;
+    var sec = el ? el.closest('.chapter, .book-opener') : null;
+    var secNome = 'Geral';
+    if (sec) { var h = sec.querySelector('h2,.ch-title,.opener-title'); if (h) secNome = h.textContent.trim().slice(0,40); }
+    var spans = [];
+    coletarNos(range).forEach(function(no) {
+      var ini = no === range.startContainer ? range.startOffset : 0;
+      var fim = no === range.endContainer   ? range.endOffset   : no.length;
+      if (ini >= fim) return;
+      var sp = document.createElement('span');
+      sp.style.cssText = 'background:' + CORES[cor] + ';color:' + CORES_TXT[cor] + ';border-radius:2px;padding:0 1px;cursor:pointer;';
+      sp.dataset.hid = id; sp.title = 'Clique para remover';
+      sp.textContent = no.nodeValue.slice(ini, fim);
+      sp.addEventListener('click', function(ev) { ev.stopPropagation(); remover(id); });
+      var frag = document.createDocumentFragment();
+      if (ini > 0) frag.appendChild(document.createTextNode(no.nodeValue.slice(0, ini)));
+      frag.appendChild(sp);
+      if (fim < no.length) frag.appendChild(document.createTextNode(no.nodeValue.slice(fim)));
+      no.parentNode.replaceChild(frag, no);
+      spans.push(sp);
+    });
+    if (!spans.length) return;
+    destaques.push({ id, texto: texto.slice(0,80), cor, sec: secNome, spans });
+    renderLista();
+  }
+
+  function coletarNos(range) {
+    var anc = range.commonAncestorContainer;
+    if (anc.nodeType === 3) return [anc];
+    var nos = [], w = document.createTreeWalker(anc, NodeFilter.SHOW_TEXT, null, false), n;
+    while ((n = w.nextNode())) { try { if (range.intersectsNode(n)) nos.push(n); } catch(e){} }
+    return nos;
+  }
+
+  function remover(id) {
+    var idx = destaques.findIndex(function(h) { return h.id === id; });
+    if (idx < 0) return;
+    destaques[idx].spans.forEach(function(sp) {
+      if (!sp.parentNode) return;
+      var pai = sp.parentNode;
+      while (sp.firstChild) pai.insertBefore(sp.firstChild, sp);
+      pai.removeChild(sp);
+      try { pai.normalize(); } catch(e){}
+    });
+    destaques.splice(idx, 1);
+    renderLista();
+  }
+
+  function renderLista() {
+    var lista = document.getElementById('saved-list');
+    if (!destaques.length) { lista.innerHTML = '<span class="saved-empty">selecione texto para sublinhar</span>'; return; }
+    lista.innerHTML = destaques.map(function(h) {
+      return '<div class="saved-item" style="background:' + CORES[h.cor] + ';color:' + CORES_TXT[h.cor] + '" onclick="__ir(' + h.id + ')">' +
+        '<div class="saved-tag">' + h.sec + '</div>\u201c' + h.texto + (h.texto.length>=80?'\u2026':'') + '\u201d</div>';
+    }).join('');
+  }
+
+  window.__ir = function(id) {
+    var h = destaques.find(function(x){ return x.id===id; });
+    if (!h || !h.spans[0]) return;
+    h.spans[0].scrollIntoView({ behavior:'smooth', block:'center' });
+    h.spans.forEach(function(s) {
+      s.style.outline = '2px solid ' + CORES[h.cor];
+      setTimeout(function(){ s.style.outline=''; }, 1500);
+    });
+  };
+
+  document.getElementById('clear-btn').addEventListener('click', function() {
+    destaques.map(function(h){ return h.id; }).slice().forEach(function(id){ try{remover(id);}catch(e){} });
+  });
+
+  marcarAtivo();
+})();
+</script>
+</body>
+</html>
